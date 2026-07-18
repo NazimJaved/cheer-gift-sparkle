@@ -16,36 +16,63 @@ export type Database = {
     Tables: {
       courses: {
         Row: {
+          category: string | null
           created_at: string
           description: string | null
+          discount_price: number | null
+          duration: string | null
           id: string
+          instructor_name: string | null
+          language: string
+          level: Database["public"]["Enums"]["course_level"]
+          preview_video_url: string | null
           price: number
           published: boolean
+          short_description: string | null
           slug: string
           thumbnail: string | null
           title: string
+          total_lessons: number
           updated_at: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description?: string | null
+          discount_price?: number | null
+          duration?: string | null
           id?: string
+          instructor_name?: string | null
+          language?: string
+          level?: Database["public"]["Enums"]["course_level"]
+          preview_video_url?: string | null
           price?: number
           published?: boolean
+          short_description?: string | null
           slug: string
           thumbnail?: string | null
           title: string
+          total_lessons?: number
           updated_at?: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string | null
+          discount_price?: number | null
+          duration?: string | null
           id?: string
+          instructor_name?: string | null
+          language?: string
+          level?: Database["public"]["Enums"]["course_level"]
+          preview_video_url?: string | null
           price?: number
           published?: boolean
+          short_description?: string | null
           slug?: string
           thumbnail?: string | null
           title?: string
+          total_lessons?: number
           updated_at?: string
         }
         Relationships: []
@@ -259,6 +286,7 @@ export type Database = {
     }
     Enums: {
       app_role: "student" | "admin"
+      course_level: "beginner" | "intermediate" | "advanced"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -387,6 +415,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["student", "admin"],
+      course_level: ["beginner", "intermediate", "advanced"],
     },
   },
 } as const
