@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site-layout";
 import { useSiteContent } from "@/lib/site-content";
+import { usePageBlocks } from "@/lib/page-blocks";
+import { BlockRenderer } from "@/components/editor/block-renderer";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
@@ -16,6 +18,14 @@ export const Route = createFileRoute("/privacy")({
 
 function PrivacyPage() {
   const c = useSiteContent("privacy");
+  const blocks = usePageBlocks("privacy");
+  if (blocks && blocks.length > 0) {
+    return (
+      <SiteLayout>
+        <BlockRenderer blocks={blocks} />
+      </SiteLayout>
+    );
+  }
   return (
     <SiteLayout>
       <article className="mx-auto max-w-3xl px-4 py-16">

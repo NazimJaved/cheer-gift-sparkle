@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site-layout";
 import { useSiteContent } from "@/lib/site-content";
+import { usePageBlocks } from "@/lib/page-blocks";
+import { BlockRenderer } from "@/components/editor/block-renderer";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
@@ -16,6 +18,14 @@ export const Route = createFileRoute("/terms")({
 
 function TermsPage() {
   const c = useSiteContent("terms");
+  const blocks = usePageBlocks("terms");
+  if (blocks && blocks.length > 0) {
+    return (
+      <SiteLayout>
+        <BlockRenderer blocks={blocks} />
+      </SiteLayout>
+    );
+  }
   return (
     <SiteLayout>
       <article className="mx-auto max-w-3xl px-4 py-16">

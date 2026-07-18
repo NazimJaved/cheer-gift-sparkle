@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Target, Heart, Users } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
 import { useSiteContent, useSignedImage } from "@/lib/site-content";
+import { usePageBlocks } from "@/lib/page-blocks";
+import { BlockRenderer } from "@/components/editor/block-renderer";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -18,6 +20,14 @@ export const Route = createFileRoute("/about")({
 function AboutPage() {
   const c = useSiteContent("about");
   const heroImg = useSignedImage(c.hero_image);
+  const blocks = usePageBlocks("about");
+  if (blocks && blocks.length > 0) {
+    return (
+      <SiteLayout>
+        <BlockRenderer blocks={blocks} />
+      </SiteLayout>
+    );
+  }
   return (
     <SiteLayout>
       <section className="mx-auto max-w-4xl px-4 py-16">
