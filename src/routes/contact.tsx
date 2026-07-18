@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
+import { useSiteContent } from "@/lib/site-content";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -17,16 +18,17 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   const [sent, setSent] = useState(false);
+  const c = useSiteContent("contact");
   return (
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-16">
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">যোগাযোগ করুন</h1>
-        <p className="mt-3 text-muted-foreground">আপনার প্রশ্ন, মতামত বা এনরোলমেন্ট অনুরোধ আমাদের জানান।</p>
+        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">{c.title}</h1>
+        <p className="mt-3 text-muted-foreground">{c.subtitle}</p>
         <div className="mt-10 grid gap-8 md:grid-cols-3">
           <div className="space-y-4 md:col-span-1">
-            <Info icon={<Mail className="h-5 w-5" />} title="ইমেইল" value="info@aminship.academy" />
-            <Info icon={<Phone className="h-5 w-5" />} title="ফোন" value="+৮৮০ ১৭০০ ০০০০০০" />
-            <Info icon={<MapPin className="h-5 w-5" />} title="ঠিকানা" value="ঢাকা, বাংলাদেশ" />
+            <Info icon={<Mail className="h-5 w-5" />} title="ইমেইল" value={c.email} />
+            <Info icon={<Phone className="h-5 w-5" />} title="ফোন" value={c.phone} />
+            <Info icon={<MapPin className="h-5 w-5" />} title="ঠিকানা" value={c.address} />
           </div>
           <form
             onSubmit={(e) => { e.preventDefault(); setSent(true); }}
