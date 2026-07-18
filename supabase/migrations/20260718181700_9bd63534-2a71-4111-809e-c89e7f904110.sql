@@ -1,0 +1,3 @@
+ALTER TABLE public.site_content 
+  ADD COLUMN IF NOT EXISTS blocks JSONB,
+  ADD COLUMN IF NOT EXISTS draft JSONB;

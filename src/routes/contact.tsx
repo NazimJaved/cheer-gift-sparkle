@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
 import { useSiteContent } from "@/lib/site-content";
+import { usePageBlocks } from "@/lib/page-blocks";
+import { BlockRenderer } from "@/components/editor/block-renderer";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -18,6 +20,14 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   const [sent, setSent] = useState(false);
+  const blocks = usePageBlocks("contact");
+  if (blocks && blocks.length > 0) {
+    return (
+      <SiteLayout>
+        <BlockRenderer blocks={blocks} />
+      </SiteLayout>
+    );
+  }
   const c = useSiteContent("contact");
   return (
     <SiteLayout>

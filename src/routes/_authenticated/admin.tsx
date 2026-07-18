@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { Loader2, LayoutDashboard, BookOpen, FileText } from "lucide-react";
+import { Loader2, LayoutDashboard, BookOpen, FileText, Paintbrush } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
 import { useIsAdmin } from "@/lib/use-admin";
 
@@ -60,6 +60,14 @@ function AdminLayout() {
               activeProps={{ className: "bg-teal text-teal-foreground border-teal" }}
             >
               <FileText className="h-4 w-4" /> কনটেন্ট এডিট
+            </Link>
+            <Link
+              to="/admin/edit/$page"
+              params={{ page: "home" }}
+              className="inline-flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm font-medium hover:bg-secondary"
+              activeProps={{ className: "bg-teal text-teal-foreground border-teal" }}
+            >
+              <Paintbrush className="h-4 w-4" /> ভিজ্যুয়াল এডিটর
             </Link>
           </nav>
         </div>
