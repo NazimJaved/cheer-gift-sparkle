@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Pencil, Plus, Search, Trash2, Eye, EyeOff, Image as ImageIcon } from "lucide-react";
+import { Loader2, Pencil, Plus, Search, Trash2, Eye, EyeOff, Image as ImageIcon, ListVideo } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getSignedThumbnailUrl } from "@/lib/use-admin";
@@ -217,6 +217,18 @@ function AdminCoursesPage() {
                           title={r.published ? "খসড়ায় নিন" : "প্রকাশ করুন"}
                         >
                           {r.published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                        <button
+                          onClick={() =>
+                            navigate({
+                              to: "/admin/courses/$courseId/lessons",
+                              params: { courseId: r.id },
+                            })
+                          }
+                          className="rounded-md p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                          title="লেসন ব্যবস্থাপনা"
+                        >
+                          <ListVideo className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => navigate({ to: "/admin/courses/$id/edit", params: { id: r.id } })}
