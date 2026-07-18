@@ -16,6 +16,10 @@ export interface PageSchema {
 }
 
 export const SITE_CONTENT_DEFAULTS: Record<string, Record<string, string>> = {
+  branding: {
+    brand_name: "আমিনশিপ একাডেমি",
+    logo_image: "",
+  },
   home: {
     hero_badge: "নতুন কোর্স উন্মোচিত",
     hero_image: "",
@@ -106,6 +110,14 @@ const TA = (key: string, label: string): ContentField => ({ key, label, type: "t
 const IMG = (key: string, label: string): ContentField => ({ key, label, type: "image" });
 
 export const SITE_CONTENT_SCHEMA: PageSchema[] = [
+  {
+    key: "branding",
+    label: "ব্র্যান্ডিং (টপ বার)",
+    fields: [
+      T("brand_name", "সাইটের নাম"),
+      IMG("logo_image", "লোগো"),
+    ],
+  },
   {
     key: "home",
     label: "হোম পেজ",

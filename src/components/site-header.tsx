@@ -4,6 +4,7 @@ import { Menu, X, GraduationCap } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/lib/use-admin";
+import { useSiteContent, useSignedImage } from "@/lib/site-content";
 
 const nav = [
   { to: "/", label: "হোম" },
@@ -16,6 +17,8 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { user, loading, signOut } = useAuth();
   const { isAdmin } = useIsAdmin();
+  const branding = useSiteContent("branding");
+  const logoUrl = useSignedImage(branding.logo_image || null);
   const navigate = useNavigate();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -32,10 +35,16 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2 font-bengali">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-teal text-teal-foreground">
-            <GraduationCap className="h-5 w-5" />
+          {logoUrl ? (
+            <img src={logoUrl} alt="" className="h-9 w-9 rounded-lg object-cover" />
+          ) : (
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-teal text-teal-foreground">
+              <GraduationCap className="h-5 w-5" />
+            </span>
+          )}
+          <span className="text-lg font-semibold tracking-tight">
+            {branding.brand_name || "আমিনশিপ একাডেমি"}
           </span>
-          <span className="text-lg font-semibold tracking-tight">আমিনশিপ একাডেমি</span>
         </Link>
         <nav className="hidden items-center gap-1 md:flex">
           {nav.map((n) => (
