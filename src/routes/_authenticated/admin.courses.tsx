@@ -36,7 +36,6 @@ const PAGE_SIZE = 10;
 
 function AdminCoursesPage() {
   const matches = useMatches();
-  const navigate = useNavigate();
   const hasChildRoute = matches.some(
     (match) =>
       match.routeId === "/_authenticated/admin/courses/new" ||
@@ -48,6 +47,11 @@ function AdminCoursesPage() {
 
   if (hasChildRoute) return <Outlet />;
 
+  return <AdminCoursesIndex />;
+}
+
+function AdminCoursesIndex() {
+  const navigate = useNavigate();
   const [rows, setRows] = useState<CourseRow[]>([]);
   const [count, setCount] = useState(0);
   const [page, setPage] = useState(1);
