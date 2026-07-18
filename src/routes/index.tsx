@@ -4,6 +4,8 @@ import { BookOpen, Award, Users, PlayCircle, CheckCircle2, Sparkles } from "luci
 import { SiteLayout } from "@/components/site-layout";
 import { courses } from "@/lib/courses";
 import { useSiteContent, useSignedImage } from "@/lib/site-content";
+import { usePageBlocks } from "@/lib/page-blocks";
+import { BlockRenderer } from "@/components/editor/block-renderer";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -13,6 +15,14 @@ function Index() {
   const featured = courses[0];
   const c = useSiteContent("home");
   const heroImg = useSignedImage(c.hero_image);
+  const blocks = usePageBlocks("home");
+  if (blocks && blocks.length > 0) {
+    return (
+      <SiteLayout>
+        <BlockRenderer blocks={blocks} />
+      </SiteLayout>
+    );
+  }
   return (
     <SiteLayout>
       {/* Hero */}
