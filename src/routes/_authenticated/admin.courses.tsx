@@ -1,6 +1,16 @@
 import { createFileRoute, Link, Outlet, useMatches, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Pencil, Plus, Search, Trash2, Eye, EyeOff, Image as ImageIcon, ListVideo } from "lucide-react";
+import {
+  Loader2,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
+  ListVideo,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getSignedThumbnailUrl } from "@/lib/use-admin";
@@ -67,7 +77,9 @@ function AdminCoursesIndex() {
     setLoading(true);
     let query = supabase
       .from("courses")
-      .select("id,title,slug,price,discount_price,published,level,category,thumbnail,created_at", { count: "exact" })
+      .select("id,title,slug,price,discount_price,published,level,category,thumbnail,created_at", {
+        count: "exact",
+      })
       .order("created_at", { ascending: false });
 
     if (q.trim()) query = query.ilike("title", `%${q.trim()}%`);
@@ -109,7 +121,10 @@ function AdminCoursesIndex() {
   }, [rows]);
 
   async function togglePublish(row: CourseRow) {
-    const { error } = await supabase.from("courses").update({ published: !row.published }).eq("id", row.id);
+    const { error } = await supabase
+      .from("courses")
+      .update({ published: !row.published })
+      .eq("id", row.id);
     if (error) return toast.error(error.message);
     toast.success(row.published ? "খসড়ায় নেওয়া হয়েছে" : "প্রকাশিত হয়েছে");
     load();
@@ -195,7 +210,11 @@ function AdminCoursesIndex() {
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         {thumbUrls[r.id] ? (
-                          <img src={thumbUrls[r.id]!} alt="" className="h-10 w-16 rounded object-cover" />
+                          <img
+                            src={thumbUrls[r.id]!}
+                            alt=""
+                            className="h-10 w-16 rounded object-cover"
+                          />
                         ) : (
                           <div className="grid h-10 w-16 place-items-center rounded bg-secondary text-muted-foreground">
                             <ImageIcon className="h-4 w-4" />
@@ -212,7 +231,9 @@ function AdminCoursesIndex() {
                       {r.discount_price != null ? (
                         <span>
                           <span className="font-medium text-green">৳{r.discount_price}</span>
-                          <span className="ml-1 text-xs text-muted-foreground line-through">৳{r.price}</span>
+                          <span className="ml-1 text-xs text-muted-foreground line-through">
+                            ৳{r.price}
+                          </span>
                         </span>
                       ) : (
                         <span className="font-medium">৳{r.price}</span>
@@ -232,7 +253,11 @@ function AdminCoursesIndex() {
                           className="rounded-md p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
                           title={r.published ? "খসড়ায় নিন" : "প্রকাশ করুন"}
                         >
-                          {r.published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {r.published ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
                         </button>
                         <button
                           onClick={() =>
@@ -247,7 +272,9 @@ function AdminCoursesIndex() {
                           <ListVideo className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => navigate({ to: "/admin/courses/$id/edit", params: { id: r.id } })}
+                          onClick={() =>
+                            navigate({ to: "/admin/courses/$id/edit", params: { id: r.id } })
+                          }
                           className="rounded-md p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
                           title="সম্পাদনা"
                         >
@@ -302,7 +329,10 @@ function AdminCoursesIndex() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>বাতিল</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               মুছুন
             </AlertDialogAction>
           </AlertDialogFooter>
