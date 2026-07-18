@@ -26,6 +26,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminCoursesRouteImport } from './routes/_authenticated/admin.courses'
 import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin.content'
 import { Route as AuthenticatedAdminCoursesNewRouteImport } from './routes/_authenticated/admin.courses.new'
+import { Route as AuthenticatedAdminContentPageRouteImport } from './routes/_authenticated/admin.content.$page'
 import { Route as AuthenticatedAdminCoursesIdEditRouteImport } from './routes/_authenticated/admin.courses.$id.edit'
 
 const TermsRoute = TermsRouteImport.update({
@@ -115,6 +116,12 @@ const AuthenticatedAdminCoursesNewRoute =
     path: '/new',
     getParentRoute: () => AuthenticatedAdminCoursesRoute,
   } as any)
+const AuthenticatedAdminContentPageRoute =
+  AuthenticatedAdminContentPageRouteImport.update({
+    id: '/$page',
+    path: '/$page',
+    getParentRoute: () => AuthenticatedAdminContentRoute,
+  } as any)
 const AuthenticatedAdminCoursesIdEditRoute =
   AuthenticatedAdminCoursesIdEditRouteImport.update({
     id: '/$id/edit',
@@ -135,9 +142,10 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/courses/$slug': typeof CoursesSlugRoute
-  '/admin/content': typeof AuthenticatedAdminContentRoute
+  '/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/content/$page': typeof AuthenticatedAdminContentPageRoute
   '/admin/courses/new': typeof AuthenticatedAdminCoursesNewRoute
   '/admin/courses/$id/edit': typeof AuthenticatedAdminCoursesIdEditRoute
 }
@@ -153,9 +161,10 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/courses/$slug': typeof CoursesSlugRoute
-  '/admin/content': typeof AuthenticatedAdminContentRoute
+  '/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/content/$page': typeof AuthenticatedAdminContentPageRoute
   '/admin/courses/new': typeof AuthenticatedAdminCoursesNewRoute
   '/admin/courses/$id/edit': typeof AuthenticatedAdminCoursesIdEditRoute
 }
@@ -174,9 +183,10 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/courses/$slug': typeof CoursesSlugRoute
-  '/_authenticated/admin/content': typeof AuthenticatedAdminContentRoute
+  '/_authenticated/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/_authenticated/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/content/$page': typeof AuthenticatedAdminContentPageRoute
   '/_authenticated/admin/courses/new': typeof AuthenticatedAdminCoursesNewRoute
   '/_authenticated/admin/courses/$id/edit': typeof AuthenticatedAdminCoursesIdEditRoute
 }
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/courses'
     | '/admin/'
+    | '/admin/content/$page'
     | '/admin/courses/new'
     | '/admin/courses/$id/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/courses'
     | '/admin'
+    | '/admin/content/$page'
     | '/admin/courses/new'
     | '/admin/courses/$id/edit'
   id:
@@ -236,6 +248,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/content'
     | '/_authenticated/admin/courses'
     | '/_authenticated/admin/'
+    | '/_authenticated/admin/content/$page'
     | '/_authenticated/admin/courses/new'
     | '/_authenticated/admin/courses/$id/edit'
   fileRoutesById: FileRoutesById
@@ -374,6 +387,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCoursesNewRouteImport
       parentRoute: typeof AuthenticatedAdminCoursesRoute
     }
+    '/_authenticated/admin/content/$page': {
+      id: '/_authenticated/admin/content/$page'
+      path: '/$page'
+      fullPath: '/admin/content/$page'
+      preLoaderRoute: typeof AuthenticatedAdminContentPageRouteImport
+      parentRoute: typeof AuthenticatedAdminContentRoute
+    }
     '/_authenticated/admin/courses/$id/edit': {
       id: '/_authenticated/admin/courses/$id/edit'
       path: '/$id/edit'
@@ -383,6 +403,20 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedAdminContentRouteChildren {
+  AuthenticatedAdminContentPageRoute: typeof AuthenticatedAdminContentPageRoute
+}
+
+const AuthenticatedAdminContentRouteChildren: AuthenticatedAdminContentRouteChildren =
+  {
+    AuthenticatedAdminContentPageRoute: AuthenticatedAdminContentPageRoute,
+  }
+
+const AuthenticatedAdminContentRouteWithChildren =
+  AuthenticatedAdminContentRoute._addFileChildren(
+    AuthenticatedAdminContentRouteChildren,
+  )
 
 interface AuthenticatedAdminCoursesRouteChildren {
   AuthenticatedAdminCoursesNewRoute: typeof AuthenticatedAdminCoursesNewRoute
@@ -401,13 +435,13 @@ const AuthenticatedAdminCoursesRouteWithChildren =
   )
 
 interface AuthenticatedAdminRouteChildren {
-  AuthenticatedAdminContentRoute: typeof AuthenticatedAdminContentRoute
+  AuthenticatedAdminContentRoute: typeof AuthenticatedAdminContentRouteWithChildren
   AuthenticatedAdminCoursesRoute: typeof AuthenticatedAdminCoursesRouteWithChildren
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
-  AuthenticatedAdminContentRoute: AuthenticatedAdminContentRoute,
+  AuthenticatedAdminContentRoute: AuthenticatedAdminContentRouteWithChildren,
   AuthenticatedAdminCoursesRoute: AuthenticatedAdminCoursesRouteWithChildren,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
