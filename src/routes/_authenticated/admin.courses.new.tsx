@@ -20,7 +20,11 @@ function NewCoursePage() {
         <CourseForm
           submitLabel="কোর্স তৈরি করুন"
           onSubmit={async (v) => {
-            const { error } = await supabase.from("courses").insert({
+            const { data: sess } = await supabase.auth.getSession();
+            if (!sess.session) {
+              throw new Error("সেশন এক্সপায়ার হয়েছে। আবার লগইন করুন।");
+            }
+            const { data, error } = await supabase.from("courses").insert({
               title: v.title,
               slug: v.slug,
               short_description: v.short_description || null,
@@ -36,11 +40,12 @@ function NewCoursePage() {
               thumbnail: v.thumbnail,
               preview_video_url: v.preview_video_url || null,
               published: v.published,
-            });
+            }).select("id").maybeSingle();
             if (error) {
-              toast.error(error.message);
-              return;
+              console.error("Insert course failed:", error);
+              throw new Error(error.message || "কোর্স তৈরি ব্যর্থ");
             }
+            void data;
             toast.success("কোর্স তৈরি হয়েছে");
             navigate({ to: "/admin/courses" });
           }}

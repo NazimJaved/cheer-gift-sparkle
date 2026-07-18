@@ -60,6 +60,7 @@ export function CourseForm({ initial, submitLabel, onSubmit }: Props) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     getSignedThumbnailUrl(values.thumbnail).then(setThumbUrl);
@@ -91,13 +92,21 @@ export function CourseForm({ initial, submitLabel, onSubmit }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitError(null);
     if (!values.title || !values.slug) {
-      toast.error("শিরোনাম এবং স্লাগ আবশ্যক");
+      const m = "শিরোনাম এবং স্লাগ আবশ্যক";
+      setSubmitError(m);
+      toast.error(m);
       return;
     }
     setSaving(true);
     try {
       await onSubmit(values);
+    } catch (err) {
+      const m = err instanceof Error ? err.message : "সংরক্ষণ ব্যর্থ হয়েছে";
+      console.error("Course submit failed:", err);
+      setSubmitError(m);
+      toast.error(m);
     } finally {
       setSaving(false);
     }
@@ -211,6 +220,11 @@ export function CourseForm({ initial, submitLabel, onSubmit }: Props) {
           {submitLabel}
         </button>
       </div>
+      {submitError ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          {submitError}
+        </div>
+      ) : null}
     </form>
   );
 }
