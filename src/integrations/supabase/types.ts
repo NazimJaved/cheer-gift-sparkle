@@ -318,17 +318,23 @@ export type Database = {
       }
       site_content: {
         Row: {
+          blocks: Json | null
           data: Json
+          draft: Json | null
           key: string
           updated_at: string
         }
         Insert: {
+          blocks?: Json | null
           data?: Json
+          draft?: Json | null
           key: string
           updated_at?: string
         }
         Update: {
+          blocks?: Json | null
           data?: Json
+          draft?: Json | null
           key?: string
           updated_at?: string
         }
