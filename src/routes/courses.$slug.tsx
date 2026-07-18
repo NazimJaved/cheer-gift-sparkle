@@ -1,13 +1,13 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Clock, PlayCircle, Award, CheckCircle2, User, Globe, ArrowLeft } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
-import { getCourse } from "@/lib/courses";
+import { getCourse, type Course } from "@/lib/courses";
 
 export const Route = createFileRoute("/courses/$slug")({
   loader: ({ params }) => {
     const course = getCourse(params.slug);
     if (!course) throw notFound();
-    return { course };
+    return { course } as { course: Course };
   },
   head: ({ loaderData }) => ({
     meta: loaderData
