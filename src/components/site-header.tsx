@@ -3,6 +3,7 @@ import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { Menu, X, GraduationCap } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useQueryClient } from "@tanstack/react-query";
+import { useIsAdmin } from "@/lib/use-admin";
 
 const nav = [
   { to: "/", label: "হোম" },
@@ -14,6 +15,7 @@ const nav = [
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { user, loading, signOut } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -51,6 +53,14 @@ export function SiteHeader() {
         <div className="hidden items-center gap-2 md:flex">
           {loading ? null : user ? (
             <>
+              {isAdmin ? (
+                <Link
+                  to="/admin"
+                  className="rounded-md px-3 py-2 text-sm font-medium text-teal hover:text-teal/80"
+                >
+                  অ্যাডমিন
+                </Link>
+              ) : null}
               <Link
                 to="/dashboard"
                 className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
