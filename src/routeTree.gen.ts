@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -26,6 +27,11 @@ const TermsRoute = TermsRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoursesRoute = CoursesRouteImport.update({
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/courses/$slug': typeof CoursesSlugRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/courses/$slug': typeof CoursesSlugRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/courses/$slug': typeof CoursesSlugRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/courses'
+    | '/forgot-password'
     | '/privacy'
     | '/terms'
     | '/courses/$slug'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/courses'
+    | '/forgot-password'
     | '/privacy'
     | '/terms'
     | '/courses/$slug'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/courses'
+    | '/forgot-password'
     | '/privacy'
     | '/terms'
     | '/courses/$slug'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   CoursesRoute: typeof CoursesRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
 }
@@ -147,6 +160,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses': {
@@ -211,6 +231,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   CoursesRoute: CoursesRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
 }
