@@ -133,6 +133,23 @@ export const SITE_CONTENT_SCHEMA: PageSchema[] = [
     ],
   },
   {
+    key: "footer",
+    label: "ফুটার",
+    fields: [
+      T("brand_name", "ফুটার ব্র্যান্ড নাম"),
+      IMG("logo_image", "ফুটার লোগো"),
+      TA("description", "বিবরণ"),
+      T("links_heading", "লিঙ্ক সেকশন শিরোনাম"),
+      T("link_1_label", "লিঙ্ক ১ — কোর্সসমূহ লেবেল"),
+      T("link_2_label", "লিঙ্ক ২ — আমাদের সম্পর্কে লেবেল"),
+      T("link_3_label", "লিঙ্ক ৩ — যোগাযোগ লেবেল"),
+      T("legal_heading", "আইনি সেকশন শিরোনাম"),
+      T("legal_1_label", "আইনি ১ — গোপনীয়তা লেবেল"),
+      T("legal_2_label", "আইনি ২ — শর্তাবলী লেবেল"),
+      T("copyright", "কপিরাইট টেক্সট ({year} বছর দেখাবে)"),
+    ],
+  },
+  {
     key: "home",
     label: "হোম পেজ",
     fields: [
