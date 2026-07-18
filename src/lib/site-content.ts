@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type FieldType = "text" | "textarea";
+export type FieldType = "text" | "textarea" | "image";
 
 export interface ContentField {
   key: string;
@@ -18,6 +18,7 @@ export interface PageSchema {
 export const SITE_CONTENT_DEFAULTS: Record<string, Record<string, string>> = {
   home: {
     hero_badge: "নতুন কোর্স উন্মোচিত",
+    hero_image: "",
     hero_title_1: "বাংলায় শিখুন,",
     hero_title_highlight: "ডিজিটাল দক্ষতায়",
     hero_title_2: "এগিয়ে যান",
@@ -45,6 +46,7 @@ export const SITE_CONTENT_DEFAULTS: Record<string, Record<string, string>> = {
   },
   about: {
     title: "আমাদের সম্পর্কে",
+    hero_image: "",
     intro:
       "আমিনশিপ একাডেমি বাংলাদেশি শিক্ষার্থীদের জন্য একটি আধুনিক অনলাইন শিক্ষা প্ল্যাটফর্ম। আমরা বিশ্বাস করি, মাতৃভাষায় শেখার সুযোগ পেলে প্রতিটি শিক্ষার্থী তার সর্বোচ্চ সম্ভাবনায় পৌঁছাতে পারে।",
     card_1_title: "আমাদের লক্ষ্য",
@@ -101,6 +103,7 @@ export const SITE_CONTENT_DEFAULTS: Record<string, Record<string, string>> = {
 
 const T = (key: string, label: string): ContentField => ({ key, label, type: "text" });
 const TA = (key: string, label: string): ContentField => ({ key, label, type: "textarea" });
+const IMG = (key: string, label: string): ContentField => ({ key, label, type: "image" });
 
 export const SITE_CONTENT_SCHEMA: PageSchema[] = [
   {
@@ -108,6 +111,7 @@ export const SITE_CONTENT_SCHEMA: PageSchema[] = [
     label: "হোম পেজ",
     fields: [
       T("hero_badge", "হিরো ব্যাজ"),
+      IMG("hero_image", "হিরো ইমেজ"),
       T("hero_title_1", "হিরো টাইটেল (অংশ ১)"),
       T("hero_title_highlight", "হিরো টাইটেল (হাইলাইট)"),
       T("hero_title_2", "হিরো টাইটেল (অংশ ২)"),
@@ -138,6 +142,7 @@ export const SITE_CONTENT_SCHEMA: PageSchema[] = [
     label: "আমাদের সম্পর্কে",
     fields: [
       T("title", "শিরোনাম"),
+      IMG("hero_image", "হিরো ইমেজ"),
       TA("intro", "ভূমিকা"),
       T("card_1_title", "কার্ড ১ — শিরোনাম"),
       TA("card_1_desc", "কার্ড ১ — বিবরণ"),
