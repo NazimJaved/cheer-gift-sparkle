@@ -165,7 +165,7 @@ export function usePageBlocks(page: string) {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const { data } = await supabase.from("site_content").select("blocks").eq("page", page).maybeSingle();
+      const { data } = await supabase.from("site_content").select("blocks").eq("key", page).maybeSingle();
       if (!alive) return;
       const b = (data?.blocks as unknown as PageBlocks | null)?.blocks;
       setBlocks(Array.isArray(b) && b.length > 0 ? b : null);
@@ -178,7 +178,7 @@ export function usePageBlocks(page: string) {
 }
 
 export async function loadDraft(page: string): Promise<Block[] | null> {
-  const { data } = await supabase.from("site_content").select("draft, blocks").eq("page", page).maybeSingle();
+  const { data } = await supabase.from("site_content").select("draft, blocks").eq("key", page).maybeSingle();
   const draft = (data?.draft as unknown as PageBlocks | null)?.blocks;
   if (Array.isArray(draft)) return draft;
   const pub = (data?.blocks as unknown as PageBlocks | null)?.blocks;
@@ -187,20 +187,19 @@ export async function loadDraft(page: string): Promise<Block[] | null> {
 
 export async function saveDraft(page: string, blocks: Block[]) {
   const payload: PageBlocks = { blocks };
-  const { data: existing } = await supabase.from("site_content").select("page").eq("page", page).maybeSingle();
-  if (existing) {
-    return supabase.from("site_content").update({ draft: payload as unknown as never }).eq("page", page);
-  }
-  return supabase.from("site_content").insert({ page, content: {} as never, draft: payload as unknown as never });
+  return supabase
+    .from("site_content")
+    .upsert({ key: page, draft: payload as unknown as never, data: {} as never }, { onConflict: "key" });
 }
 
 export async function publishBlocks(page: string, blocks: Block[]) {
   const payload: PageBlocks = { blocks };
-  const { data: existing } = await supabase.from("site_content").select("page").eq("page", page).maybeSingle();
-  if (existing) {
-    return supabase.from("site_content").update({ blocks: payload as unknown as never, draft: null }).eq("page", page);
-  }
-  return supabase.from("site_content").insert({ page, content: {} as never, blocks: payload as unknown as never });
+  return supabase
+    .from("site_content")
+    .upsert(
+      { key: page, blocks: payload as unknown as never, draft: null as unknown as never, data: {} as never },
+      { onConflict: "key" },
+    );
 }
 
 // ---------- Storage image helper ----------
