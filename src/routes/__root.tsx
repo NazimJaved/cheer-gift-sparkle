@@ -77,14 +77,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "ডিজিটাল আমিনশিপ একাডেমি — বাংলাদেশি শিক্ষার্থীদের জন্য অনলাইন কোর্স" },
+      { name: "description", content: "বাংলা ভাষায় আধুনিক অনলাইন কোর্স। ডিজিটাল আমিনশিপ শিখুন হাতে-কলমে, নিজের গতিতে।" },
+      { property: "og:title", content: "ডিজিটাল আমিনশিপ একাডেমি" },
+      { property: "og:description", content: "বাংলাদেশি শিক্ষার্থীদের জন্য বাংলা ভাষার অনলাইন লার্নিং প্ল্যাটফর্ম।" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
@@ -92,6 +90,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
