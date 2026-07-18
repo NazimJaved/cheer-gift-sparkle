@@ -90,7 +90,7 @@ function CourseDetail() {
                 অ্যাক্সেসের জন্য যোগাযোগ করুন
               </Link>
               <ul className="mt-6 space-y-2 text-sm">
-                {course.highlights.map((h) => (
+                {course.highlights.map((h: string) => (
                   <li key={h} className="flex items-start gap-2">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 text-green" />
                     <span>{h}</span>
@@ -113,7 +113,7 @@ function CourseDetail() {
             <div>
               <h2 className="text-2xl font-bold">কী শিখবেন</h2>
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {course.outcomes.map((o) => (
+                {course.outcomes.map((o: string) => (
                   <li key={o} className="flex items-start gap-2 rounded-lg border border-border bg-card p-3 text-sm">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 text-green" />
                     <span>{o}</span>
@@ -124,11 +124,11 @@ function CourseDetail() {
             <div>
               <h2 className="text-2xl font-bold">কোর্স কারিকুলাম</h2>
               <div className="mt-4 space-y-3">
-                {course.curriculum.map((m) => (
+                {course.curriculum.map((m: { module: string; lessons: string[] }) => (
                   <div key={m.module} className="rounded-lg border border-border bg-card p-4">
                     <h3 className="font-semibold">{m.module}</h3>
                     <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                      {m.lessons.map((l) => (
+                      {m.lessons.map((l: string) => (
                         <li key={l} className="flex items-center gap-2">
                           <PlayCircle className="h-4 w-4 text-teal" /> {l}
                         </li>
@@ -143,7 +143,7 @@ function CourseDetail() {
             <div className="sticky top-24 rounded-xl border border-border bg-card p-6">
               <h3 className="text-lg font-semibold">এই কোর্স কার জন্য</h3>
               <ul className="mt-4 space-y-2 text-sm">
-                {course.audience.map((a) => (
+                {course.audience.map((a: string) => (
                   <li key={a} className="flex items-start gap-2">
                     <Award className="mt-0.5 h-4 w-4 text-teal" />
                     <span>{a}</span>
