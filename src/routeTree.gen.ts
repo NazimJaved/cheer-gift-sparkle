@@ -26,6 +26,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedLearnCourseSlugRouteImport } from './routes/_authenticated/learn.$courseSlug'
 import { Route as AuthenticatedAdminCoursesRouteImport } from './routes/_authenticated/admin.courses'
 import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin.content'
+import { Route as AuthenticatedLearnCourseSlugLessonSlugRouteImport } from './routes/_authenticated/learn.$courseSlug.$lessonSlug'
 import { Route as AuthenticatedAdminCoursesNewRouteImport } from './routes/_authenticated/admin.courses.new'
 import { Route as AuthenticatedAdminContentPageRouteImport } from './routes/_authenticated/admin.content.$page'
 import { Route as AuthenticatedAdminCoursesIdEditRouteImport } from './routes/_authenticated/admin.courses.$id.edit'
@@ -120,6 +121,12 @@ const AuthenticatedAdminContentRoute =
     path: '/content',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedLearnCourseSlugLessonSlugRoute =
+  AuthenticatedLearnCourseSlugLessonSlugRouteImport.update({
+    id: '/$lessonSlug',
+    path: '/$lessonSlug',
+    getParentRoute: () => AuthenticatedLearnCourseSlugRoute,
+  } as any)
 const AuthenticatedAdminCoursesNewRoute =
   AuthenticatedAdminCoursesNewRouteImport.update({
     id: '/new',
@@ -172,10 +179,11 @@ export interface FileRoutesByFullPath {
   '/courses/$slug': typeof CoursesSlugRoute
   '/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
-  '/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRoute
+  '/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRouteWithChildren
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/content/$page': typeof AuthenticatedAdminContentPageRoute
   '/admin/courses/new': typeof AuthenticatedAdminCoursesNewRoute
+  '/learn/$courseSlug/$lessonSlug': typeof AuthenticatedLearnCourseSlugLessonSlugRoute
   '/admin/courses/$courseId/lessons': typeof AuthenticatedAdminCoursesCourseIdLessonsRouteWithChildren
   '/admin/courses/$id/edit': typeof AuthenticatedAdminCoursesIdEditRoute
   '/admin/courses/$courseId/lessons/new': typeof AuthenticatedAdminCoursesCourseIdLessonsNewRoute
@@ -195,10 +203,11 @@ export interface FileRoutesByTo {
   '/courses/$slug': typeof CoursesSlugRoute
   '/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
-  '/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRoute
+  '/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRouteWithChildren
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/content/$page': typeof AuthenticatedAdminContentPageRoute
   '/admin/courses/new': typeof AuthenticatedAdminCoursesNewRoute
+  '/learn/$courseSlug/$lessonSlug': typeof AuthenticatedLearnCourseSlugLessonSlugRoute
   '/admin/courses/$courseId/lessons': typeof AuthenticatedAdminCoursesCourseIdLessonsRouteWithChildren
   '/admin/courses/$id/edit': typeof AuthenticatedAdminCoursesIdEditRoute
   '/admin/courses/$courseId/lessons/new': typeof AuthenticatedAdminCoursesCourseIdLessonsNewRoute
@@ -221,10 +230,11 @@ export interface FileRoutesById {
   '/courses/$slug': typeof CoursesSlugRoute
   '/_authenticated/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/_authenticated/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
-  '/_authenticated/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRoute
+  '/_authenticated/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRouteWithChildren
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/content/$page': typeof AuthenticatedAdminContentPageRoute
   '/_authenticated/admin/courses/new': typeof AuthenticatedAdminCoursesNewRoute
+  '/_authenticated/learn/$courseSlug/$lessonSlug': typeof AuthenticatedLearnCourseSlugLessonSlugRoute
   '/_authenticated/admin/courses/$courseId/lessons': typeof AuthenticatedAdminCoursesCourseIdLessonsRouteWithChildren
   '/_authenticated/admin/courses/$id/edit': typeof AuthenticatedAdminCoursesIdEditRoute
   '/_authenticated/admin/courses/$courseId/lessons/new': typeof AuthenticatedAdminCoursesCourseIdLessonsNewRoute
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/content/$page'
     | '/admin/courses/new'
+    | '/learn/$courseSlug/$lessonSlug'
     | '/admin/courses/$courseId/lessons'
     | '/admin/courses/$id/edit'
     | '/admin/courses/$courseId/lessons/new'
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/content/$page'
     | '/admin/courses/new'
+    | '/learn/$courseSlug/$lessonSlug'
     | '/admin/courses/$courseId/lessons'
     | '/admin/courses/$id/edit'
     | '/admin/courses/$courseId/lessons/new'
@@ -299,6 +311,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/admin/content/$page'
     | '/_authenticated/admin/courses/new'
+    | '/_authenticated/learn/$courseSlug/$lessonSlug'
     | '/_authenticated/admin/courses/$courseId/lessons'
     | '/_authenticated/admin/courses/$id/edit'
     | '/_authenticated/admin/courses/$courseId/lessons/new'
@@ -439,6 +452,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminContentRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/learn/$courseSlug/$lessonSlug': {
+      id: '/_authenticated/learn/$courseSlug/$lessonSlug'
+      path: '/$lessonSlug'
+      fullPath: '/learn/$courseSlug/$lessonSlug'
+      preLoaderRoute: typeof AuthenticatedLearnCourseSlugLessonSlugRouteImport
+      parentRoute: typeof AuthenticatedLearnCourseSlugRoute
+    }
     '/_authenticated/admin/courses/new': {
       id: '/_authenticated/admin/courses/new'
       path: '/new'
@@ -550,16 +570,32 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
+interface AuthenticatedLearnCourseSlugRouteChildren {
+  AuthenticatedLearnCourseSlugLessonSlugRoute: typeof AuthenticatedLearnCourseSlugLessonSlugRoute
+}
+
+const AuthenticatedLearnCourseSlugRouteChildren: AuthenticatedLearnCourseSlugRouteChildren =
+  {
+    AuthenticatedLearnCourseSlugLessonSlugRoute:
+      AuthenticatedLearnCourseSlugLessonSlugRoute,
+  }
+
+const AuthenticatedLearnCourseSlugRouteWithChildren =
+  AuthenticatedLearnCourseSlugRoute._addFileChildren(
+    AuthenticatedLearnCourseSlugRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedLearnCourseSlugRoute: typeof AuthenticatedLearnCourseSlugRoute
+  AuthenticatedLearnCourseSlugRoute: typeof AuthenticatedLearnCourseSlugRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedLearnCourseSlugRoute: AuthenticatedLearnCourseSlugRoute,
+  AuthenticatedLearnCourseSlugRoute:
+    AuthenticatedLearnCourseSlugRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
