@@ -242,3 +242,28 @@ export async function saveSiteContent(key: string, data: Record<string, string>)
     .upsert({ key, data }, { onConflict: "key" });
   if (error) throw error;
 }
+
+export function useSignedImage(path: string | null | undefined): string | null {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!path) {
+      setUrl(null);
+      return;
+    }
+    if (path.startsWith("http")) {
+      setUrl(path);
+      return;
+    }
+    supabase.storage
+      .from("course-thumbnails")
+      .createSignedUrl(path, 60 * 60)
+      .then(({ data }) => {
+        if (!cancelled) setUrl(data?.signedUrl ?? null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [path]);
+  return url;
+}
