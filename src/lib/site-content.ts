@@ -20,6 +20,20 @@ export const SITE_CONTENT_DEFAULTS: Record<string, Record<string, string>> = {
     brand_name: "আমিনশিপ একাডেমি",
     logo_image: "",
   },
+  footer: {
+    brand_name: "আমিনশিপ একাডেমি",
+    logo_image: "",
+    description:
+      "বাংলাদেশি শিক্ষার্থীদের জন্য বাংলা ভাষার আধুনিক অনলাইন কোর্স প্ল্যাটফর্ম।",
+    links_heading: "লিঙ্কসমূহ",
+    link_1_label: "কোর্সসমূহ",
+    link_2_label: "আমাদের সম্পর্কে",
+    link_3_label: "যোগাযোগ",
+    legal_heading: "আইনি",
+    legal_1_label: "গোপনীয়তা নীতি",
+    legal_2_label: "শর্তাবলী",
+    copyright: "© {year} আমিনশিপ একাডেমি। সর্বস্বত্ব সংরক্ষিত।",
+  },
   home: {
     hero_badge: "নতুন কোর্স উন্মোচিত",
     hero_image: "",
@@ -116,6 +130,23 @@ export const SITE_CONTENT_SCHEMA: PageSchema[] = [
     fields: [
       T("brand_name", "সাইটের নাম"),
       IMG("logo_image", "লোগো"),
+    ],
+  },
+  {
+    key: "footer",
+    label: "ফুটার",
+    fields: [
+      T("brand_name", "ফুটার ব্র্যান্ড নাম"),
+      IMG("logo_image", "ফুটার লোগো"),
+      TA("description", "বিবরণ"),
+      T("links_heading", "লিঙ্ক সেকশন শিরোনাম"),
+      T("link_1_label", "লিঙ্ক ১ — কোর্সসমূহ লেবেল"),
+      T("link_2_label", "লিঙ্ক ২ — আমাদের সম্পর্কে লেবেল"),
+      T("link_3_label", "লিঙ্ক ৩ — যোগাযোগ লেবেল"),
+      T("legal_heading", "আইনি সেকশন শিরোনাম"),
+      T("legal_1_label", "আইনি ১ — গোপনীয়তা লেবেল"),
+      T("legal_2_label", "আইনি ২ — শর্তাবলী লেবেল"),
+      T("copyright", "কপিরাইট টেক্সট ({year} বছর দেখাবে)"),
     ],
   },
   {
