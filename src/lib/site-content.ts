@@ -111,6 +111,14 @@ const IMG = (key: string, label: string): ContentField => ({ key, label, type: "
 
 export const SITE_CONTENT_SCHEMA: PageSchema[] = [
   {
+    key: "branding",
+    label: "ব্র্যান্ডিং (টপ বার)",
+    fields: [
+      T("brand_name", "সাইটের নাম"),
+      IMG("logo_image", "লোগো"),
+    ],
+  },
+  {
     key: "home",
     label: "হোম পেজ",
     fields: [
