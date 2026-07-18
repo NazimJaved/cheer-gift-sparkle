@@ -16,6 +16,10 @@ export interface PageSchema {
 }
 
 export const SITE_CONTENT_DEFAULTS: Record<string, Record<string, string>> = {
+  branding: {
+    brand_name: "আমিনশিপ একাডেমি",
+    logo_image: "",
+  },
   home: {
     hero_badge: "নতুন কোর্স উন্মোচিত",
     hero_image: "",
