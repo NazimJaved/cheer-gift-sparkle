@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useMatches, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Pencil, Plus, Search, Trash2, Eye, EyeOff, Image as ImageIcon, ListVideo } from "lucide-react";
 import { toast } from "sonner";
@@ -35,6 +35,22 @@ export const Route = createFileRoute("/_authenticated/admin/courses")({
 const PAGE_SIZE = 10;
 
 function AdminCoursesPage() {
+  const matches = useMatches();
+  const hasChildRoute = matches.some(
+    (match) =>
+      match.routeId === "/_authenticated/admin/courses/new" ||
+      match.routeId === "/_authenticated/admin/courses/$id/edit" ||
+      match.routeId === "/_authenticated/admin/courses/$courseId/lessons" ||
+      match.routeId === "/_authenticated/admin/courses/$courseId/lessons/new" ||
+      match.routeId === "/_authenticated/admin/courses/$courseId/lessons/$lessonId/edit",
+  );
+
+  if (hasChildRoute) return <Outlet />;
+
+  return <AdminCoursesIndex />;
+}
+
+function AdminCoursesIndex() {
   const navigate = useNavigate();
   const [rows, setRows] = useState<CourseRow[]>([]);
   const [count, setCount] = useState(0);
