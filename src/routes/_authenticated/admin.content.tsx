@@ -1,10 +1,17 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useMatches } from "@tanstack/react-router";
 import { FileText } from "lucide-react";
 import { SITE_CONTENT_SCHEMA } from "@/lib/site-content";
 
 export const Route = createFileRoute("/_authenticated/admin/content")({
-  component: AdminContentIndex,
+  component: AdminContentLayout,
 });
+
+function AdminContentLayout() {
+  const matches = useMatches();
+  const hasChild = matches.some((m) => m.routeId === "/_authenticated/admin/content/$page");
+  if (hasChild) return <Outlet />;
+  return <AdminContentIndex />;
+}
 
 function AdminContentIndex() {
   return (
