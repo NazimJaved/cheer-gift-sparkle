@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Save, RotateCcw } from "lucide-react";
+import { ArrowLeft, Loader2, Save, RotateCcw, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   SITE_CONTENT_DEFAULTS,
   getPageSchema,
   saveSiteContent,
+  useSignedImage,
 } from "@/lib/site-content";
 
 export const Route = createFileRoute("/_authenticated/admin/content/$page")({
@@ -114,6 +115,11 @@ function AdminContentEditor() {
                   onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-teal focus:ring-1 focus:ring-teal"
                 />
+              ) : f.type === "image" ? (
+                <ImageUpload
+                  value={values[f.key] ?? ""}
+                  onChange={(v) => setValues((prev) => ({ ...prev, [f.key]: v }))}
+                />
               ) : (
                 <input
                   type="text"
@@ -143,6 +149,65 @@ function AdminContentEditor() {
       >
         বাতিল
       </button>
+    </div>
+  );
+}
+
+function ImageUpload({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const preview = useSignedImage(value || null);
+
+  async function handleFile(file: File) {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `site/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("course-thumbnails")
+        .upload(path, file, { cacheControl: "3600", upsert: false });
+      if (error) throw error;
+      onChange(path);
+      toast.success("ইমেজ আপলোড হয়েছে");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      {preview ? (
+        <img src={preview} alt="preview" className="h-24 w-40 rounded-md border border-border object-cover" />
+      ) : (
+        <div className="grid h-24 w-40 place-items-center rounded-md border border-dashed border-border text-xs text-muted-foreground">
+          কোনো ইমেজ নেই
+        </div>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-input px-3 py-2 text-sm hover:bg-secondary">
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+          PC থেকে আপলোড
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleFile(f);
+            }}
+          />
+        </label>
+        {value ? (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="inline-flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm hover:bg-secondary"
+          >
+            <X className="h-4 w-4" /> সরান
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

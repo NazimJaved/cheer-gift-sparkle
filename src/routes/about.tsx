@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Target, Heart, Users } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
-import { useSiteContent } from "@/lib/site-content";
+import { useSiteContent, useSignedImage } from "@/lib/site-content";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -17,10 +17,18 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
   const c = useSiteContent("about");
+  const heroImg = useSignedImage(c.hero_image);
   return (
     <SiteLayout>
       <section className="mx-auto max-w-4xl px-4 py-16">
         <h1 className="text-4xl font-bold tracking-tight md:text-5xl">{c.title}</h1>
+        {heroImg ? (
+          <img
+            src={heroImg}
+            alt={c.title}
+            className="mt-6 w-full rounded-2xl border border-border object-cover"
+          />
+        ) : null}
         <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
           {c.intro}
         </p>

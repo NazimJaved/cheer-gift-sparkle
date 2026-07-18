@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { BookOpen, Award, Users, PlayCircle, CheckCircle2, Sparkles } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
 import { courses } from "@/lib/courses";
-import { useSiteContent } from "@/lib/site-content";
+import { useSiteContent, useSignedImage } from "@/lib/site-content";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const featured = courses[0];
   const c = useSiteContent("home");
+  const heroImg = useSignedImage(c.hero_image);
   return (
     <SiteLayout>
       {/* Hero */}
@@ -49,9 +50,13 @@ function Index() {
             </div>
             <div className="relative">
               <div className="rounded-2xl border border-border bg-card p-6 shadow-xl">
-                <div className="flex aspect-video items-center justify-center rounded-lg bg-gradient-to-br from-teal/20 to-green/30">
-                  <PlayCircle className="h-16 w-16 text-teal" />
-                </div>
+                {heroImg ? (
+                  <img src={heroImg} alt={featured.title} className="aspect-video w-full rounded-lg object-cover" />
+                ) : (
+                  <div className="flex aspect-video items-center justify-center rounded-lg bg-gradient-to-br from-teal/20 to-green/30">
+                    <PlayCircle className="h-16 w-16 text-teal" />
+                  </div>
+                )}
                 <h3 className="mt-4 text-lg font-semibold">{featured.title}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{featured.subtitle}</p>
                 <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
