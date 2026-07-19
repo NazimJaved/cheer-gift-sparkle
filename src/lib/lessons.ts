@@ -30,11 +30,19 @@ export function slugify(input: string): string {
  */
 export function extractYouTubeId(url: string | null | undefined): string | null {
   if (!url) return null;
+  const trimmed = url.trim();
+  // Bare 11-char id
+  if (/^[A-Za-z0-9_-]{11}$/.test(trimmed)) return trimmed;
   const patterns = [
-    /(?:youtube\.com\/watch\?[^#]*v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/,
+    /[?&]v=([A-Za-z0-9_-]{11})/,
+    /youtu\.be\/([A-Za-z0-9_-]{11})/,
+    /youtube\.com\/embed\/([A-Za-z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/,
+    /youtube\.com\/live\/([A-Za-z0-9_-]{11})/,
+    /youtube-nocookie\.com\/embed\/([A-Za-z0-9_-]{11})/,
   ];
   for (const p of patterns) {
-    const m = url.match(p);
+    const m = trimmed.match(p);
     if (m) return m[1];
   }
   return null;
@@ -42,7 +50,9 @@ export function extractYouTubeId(url: string | null | undefined): string | null 
 
 export function youtubeEmbedUrl(url: string | null | undefined): string | null {
   const id = extractYouTubeId(url);
-  return id ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1` : null;
+  return id
+    ? `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&color=white`
+    : null;
 }
 
 export async function isEnrolled(courseId: string, userId: string): Promise<boolean> {

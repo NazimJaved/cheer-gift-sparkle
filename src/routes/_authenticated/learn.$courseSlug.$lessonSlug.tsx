@@ -206,26 +206,50 @@ function LessonPlayerPage() {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div>
-            <div className="overflow-hidden rounded-xl border border-border bg-black">
-              {canView ? (
-                embed ? (
-                  <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
-                    <iframe
-                      src={embed}
-                      title={current.title}
-                      className="absolute inset-0 h-full w-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
+            <div className="relative">
+              {/* ambient glow */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-br from-teal/30 via-green/20 to-teal/10 blur-3xl opacity-70"
+              />
+              <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-black shadow-[0_20px_60px_-20px_rgba(0,0,0,0.45)] ring-1 ring-white/5">
+                {/* top chrome bar */}
+                <div className="flex items-center justify-between border-b border-white/5 bg-gradient-to-r from-black/90 via-black/70 to-black/90 px-4 py-2 text-xs text-white/70 backdrop-blur">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
                   </div>
+                  <span className="max-w-[60%] truncate font-medium">{current.title}</span>
+                  <span className="hidden sm:inline text-[10px] uppercase tracking-wider text-white/40">
+                    HD • {current.duration || "লেসন"}
+                  </span>
+                </div>
+                {canView ? (
+                  embed ? (
+                    <div className="relative w-full bg-black" style={{ aspectRatio: "16 / 9" }}>
+                      <iframe
+                        key={current.id}
+                        src={embed}
+                        title={current.title}
+                        className="absolute inset-0 h-full w-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <div className="grid aspect-video place-items-center bg-gradient-to-br from-slate-900 via-black to-slate-900 text-center text-white/70">
+                      <div>
+                        <PlayCircle className="mx-auto h-10 w-10 text-white/30" />
+                        <p className="mt-3 text-sm">এই লেসনে এখনো ভিডিও যুক্ত হয়নি</p>
+                      </div>
+                    </div>
+                  )
                 ) : (
-                  <div className="grid aspect-video place-items-center text-muted-foreground">
-                    <span>ভিডিও যুক্ত করা হয়নি</span>
-                  </div>
-                )
-              ) : (
-                <LockedPreview course={course} />
-              )}
+                  <LockedPreview course={course} />
+                )}
+              </div>
             </div>
 
             {canView && (
