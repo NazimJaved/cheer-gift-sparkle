@@ -212,33 +212,54 @@ export type Database = {
       }
       payments: {
         Row: {
+          admin_note: string | null
           amount: number
           course_id: string | null
           created_at: string
           id: string
+          mobile_number: string | null
+          note: string | null
+          payment_date: string | null
           payment_method: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sender_name: string | null
           status: string
           transaction_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          admin_note?: string | null
           amount: number
           course_id?: string | null
           created_at?: string
           id?: string
+          mobile_number?: string | null
+          note?: string | null
+          payment_date?: string | null
           payment_method: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sender_name?: string | null
           status?: string
           transaction_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          admin_note?: string | null
           amount?: number
           course_id?: string | null
           created_at?: string
           id?: string
+          mobile_number?: string | null
+          note?: string | null
+          payment_date?: string | null
           payment_method?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sender_name?: string | null
           status?: string
           transaction_id?: string | null
           updated_at?: string
