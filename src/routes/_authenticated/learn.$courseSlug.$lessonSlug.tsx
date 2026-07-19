@@ -495,10 +495,36 @@ function LessonPlayerPage() {
   );
 }
 
-function LockedPreview({ course }: { course: CourseRow }) {
-  return _LockedPreview({ course });
+function PlaybackRateMenu({ onSelect }: { onSelect: (r: number) => void }) {
+  const [open, setOpen] = useState(false);
+  const rates = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        title="প্লেব্যাক গতি"
+        className="rounded p-1 text-white/70 hover:bg-white/10 hover:text-white"
+      >
+        <Gauge className="h-3.5 w-3.5" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-20 mt-1 w-20 overflow-hidden rounded-md border border-white/10 bg-black/95 py-1 text-xs shadow-lg">
+          {rates.map((r) => (
+            <button
+              key={r}
+              onClick={() => { onSelect(r); setOpen(false); }}
+              className="block w-full px-3 py-1 text-left text-white/80 hover:bg-white/10"
+            >
+              {r}x
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
-function _LockedPreview({ course }: { course: CourseRow }) {
+
+function LockedPreview({ course }: { course: CourseRow }) {
   const finalPrice = course.discount_price ?? course.price;
   return (
     <div className="grid aspect-video place-items-center bg-gradient-to-br from-teal/10 via-background to-green/10 p-8 text-center">
