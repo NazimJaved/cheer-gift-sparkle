@@ -10,6 +10,9 @@ import {
   Lock,
   PlayCircle,
   Sparkles,
+  AlertTriangle,
+  ExternalLink,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site-layout";
@@ -227,24 +230,14 @@ function LessonPlayerPage() {
                 </div>
                 {canView ? (
                   embed ? (
-                    <div className="relative w-full bg-black" style={{ aspectRatio: "16 / 9" }}>
-                      <iframe
-                        key={current.id}
-                        src={embed}
-                        title={current.title}
-                        className="absolute inset-0 h-full w-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                        referrerPolicy="strict-origin-when-cross-origin"
-                        allowFullScreen
-                      />
-                    </div>
+                    <VideoFrame
+                      embed={embed}
+                      rawUrl={current.youtube_url}
+                      title={current.title}
+                      lessonId={current.id}
+                    />
                   ) : (
-                    <div className="grid aspect-video place-items-center bg-gradient-to-br from-slate-900 via-black to-slate-900 text-center text-white/70">
-                      <div>
-                        <PlayCircle className="mx-auto h-10 w-10 text-white/30" />
-                        <p className="mt-3 text-sm">এই লেসনে এখনো ভিডিও যুক্ত হয়নি</p>
-                      </div>
-                    </div>
+                    <UnparseableVideo rawUrl={current.youtube_url} />
                   )
                 ) : (
                   <LockedPreview course={course} />
