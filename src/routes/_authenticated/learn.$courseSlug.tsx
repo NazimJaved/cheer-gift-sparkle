@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { SiteLayout } from "@/components/site-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { extractYouTubeId, type Lesson } from "@/lib/lessons";
+import { extractYouTubeId, type Chapter, type Lesson } from "@/lib/lessons";
 
 export const Route = createFileRoute("/_authenticated/learn/$courseSlug")({
   component: LearnCourseIndex,
@@ -20,6 +20,7 @@ function LearnCourseIndex() {
   const [course, setCourse] = useState<CourseInfo | null>(null);
   const [enrolled, setEnrolled] = useState(false);
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [resumeLessonSlug, setResumeLessonSlug] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
@@ -75,6 +76,12 @@ function LearnCourseIndex() {
         .eq("is_published", true)
         .order("lesson_order", { ascending: true });
       setLessons((ls ?? []) as Lesson[]);
+      const { data: chs } = await supabase
+        .from("course_chapters")
+        .select("id,course_id,title,chapter_order")
+        .eq("course_id", c.id)
+        .order("chapter_order", { ascending: true });
+      setChapters((chs ?? []) as Chapter[]);
       // pick initial preview: resume lesson if available, else first
       const initial = (ls ?? []).find((x) => x.slug === (resumeLessonSlug ?? "")) ?? (ls ?? [])[0];
       if (initial) setActiveLessonId(initial.id);
@@ -127,6 +134,16 @@ function LearnCourseIndex() {
   const activeLesson = lessons.find((l) => l.id === activeLessonId) ?? lessons[0];
   const activeVideoId = activeLesson ? extractYouTubeId(activeLesson.youtube_url) : null;
 
+  const grouped: { chapter: Chapter | null; lessons: Lesson[] }[] = [
+    ...chapters.map((c) => ({
+      chapter: c,
+      lessons: lessons.filter((l) => l.chapter_id === c.id),
+    })),
+    { chapter: null, lessons: lessons.filter((l) => !l.chapter_id) },
+  ].filter((g) => g.lessons.length > 0);
+  const showChapterHeaders = chapters.length > 0;
+  let lessonIndex = 0;
+
   return (
     <SiteLayout>
       <div className="mx-auto max-w-7xl px-4 py-10">
@@ -162,47 +179,62 @@ function LearnCourseIndex() {
         <div className="mt-8 grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
           <div className="order-2 lg:order-1">
             <h2 className="mb-3 text-lg font-bold">সব লেসন</h2>
-            <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
-          {lessons.map((l, i) => {
-            const isDone = completedIds.has(l.id);
-            const isActive = activeLesson?.id === l.id;
-            return (
-              <li key={l.id}>
-                <button
-                  type="button"
-                  onClick={() => setActiveLessonId(l.id)}
-                  className={`flex w-full items-center gap-3 p-4 text-left transition hover:bg-secondary ${
-                    isActive ? "bg-teal/5" : ""
-                  }`}
-                >
-                  <span
-                    className={`grid h-8 w-8 shrink-0 place-items-center rounded-md text-xs font-semibold ${
-                      isActive ? "bg-teal text-teal-foreground" : "bg-secondary"
-                    }`}
-                  >
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{l.title}</div>
-                    <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-                      {l.duration && <span>{l.duration}</span>}
-                      {l.is_free_preview && (
-                        <span className="inline-flex items-center gap-0.5 text-green">
-                          <Sparkles className="h-3 w-3" /> প্রিভিউ
-                        </span>
-                      )}
+            <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+              {grouped.map((g) => (
+                <div key={g.chapter?.id ?? "__none"}>
+                  {showChapterHeaders && (
+                    <div className="flex items-center justify-between bg-gradient-to-r from-teal/10 via-teal/5 to-transparent px-4 py-2.5">
+                      <span className="text-xs font-bold uppercase tracking-wide text-teal">
+                        {g.chapter ? g.chapter.title : "অন্যান্য"}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">{g.lessons.length} লেসন</span>
                     </div>
-                  </div>
-                  {isDone ? (
-                    <CheckCircle2 className="h-5 w-5 text-green" />
-                  ) : (
-                    <PlayCircle className={`h-5 w-5 ${isActive ? "text-teal" : "text-muted-foreground"}`} />
                   )}
-                </button>
-              </li>
-            );
-          })}
-            </ul>
+                  <ul className="divide-y divide-border">
+                    {g.lessons.map((l) => {
+                      const i = lessonIndex++;
+                      const isDone = completedIds.has(l.id);
+                      const isActive = activeLesson?.id === l.id;
+                      return (
+                        <li key={l.id}>
+                          <button
+                            type="button"
+                            onClick={() => setActiveLessonId(l.id)}
+                            className={`flex w-full items-center gap-3 p-4 text-left transition hover:bg-secondary ${
+                              isActive ? "bg-teal/5" : ""
+                            }`}
+                          >
+                            <span
+                              className={`grid h-8 w-8 shrink-0 place-items-center rounded-md text-xs font-semibold ${
+                                isActive ? "bg-teal text-teal-foreground" : "bg-secondary"
+                              }`}
+                            >
+                              {i + 1}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-sm font-medium">{l.title}</div>
+                              <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                                {l.duration && <span>{l.duration}</span>}
+                                {l.is_free_preview && (
+                                  <span className="inline-flex items-center gap-0.5 text-green">
+                                    <Sparkles className="h-3 w-3" /> প্রিভিউ
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {isDone ? (
+                              <CheckCircle2 className="h-5 w-5 text-green" />
+                            ) : (
+                              <PlayCircle className={`h-5 w-5 ${isActive ? "text-teal" : "text-muted-foreground"}`} />
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
 
           <aside className="order-1 lg:order-2 lg:sticky lg:top-24 lg:self-start">
