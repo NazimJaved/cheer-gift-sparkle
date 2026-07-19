@@ -125,7 +125,7 @@ function LearnCourseIndex() {
   const total = lessons.length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   const activeLesson = lessons.find((l) => l.id === activeLessonId) ?? lessons[0];
-  const activeVideoId = activeLesson ? extractYouTubeId(activeLesson.video_url) : null;
+  const activeVideoId = activeLesson ? extractYouTubeId(activeLesson.youtube_url) : null;
 
   return (
     <SiteLayout>
