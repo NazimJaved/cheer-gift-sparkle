@@ -41,7 +41,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export const Route = createFileRoute("/_authenticated/admin/courses/$courseId/lessons")({
+export const Route = createFileRoute("/_authenticated/admin/courses/$courseId/lessons/")({
   component: AdminLessonsPage,
 });
 
