@@ -1,0 +1,1 @@
+UPDATE public.lessons SET slug = 'kivabe-capcut-pc-te-install-korben' WHERE slug = 'Kivabe capcut PC te install korben.';
