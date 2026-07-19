@@ -450,9 +450,6 @@ function LessonVideoFrame({
         onLoad={() => setStatus("ready")}
         onError={() => setStatus("error")}
       />
-      {/* Masks over YouTube branding, title bar, and share/watch-on-YouTube controls */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b from-black to-transparent" />
-      <div className="pointer-events-none absolute right-0 bottom-0 z-10 h-10 w-28 bg-black" />
       <div className="absolute bottom-3 right-3 z-20 flex gap-2">
         {status === "error" && (
           <button
