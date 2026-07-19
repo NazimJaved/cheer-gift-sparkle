@@ -53,7 +53,7 @@ export function LessonForm({
     }
 
     setSaving(true);
-    const finalSlug = (f.slug || slugify(f.title)).trim();
+    const finalSlug = slugify(f.slug || f.title);
     const payload = {
       course_id: courseId,
       title: f.title.trim(),
