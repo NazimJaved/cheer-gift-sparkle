@@ -1,6 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Loader2, Smartphone, CheckCircle2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  CheckCircle2,
+  Copy,
+  ShieldCheck,
+  Clock,
+  User,
+  Phone,
+  Hash,
+  Calendar,
+  StickyNote,
+  Wallet,
+} from "lucide-react";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site-layout";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +32,12 @@ const METHOD_LABELS: Record<MethodKey, string> = {
   bkash: "bKash",
   nagad: "Nagad",
   rocket: "Rocket",
+};
+
+const METHOD_STYLES: Record<MethodKey, { bg: string; ring: string; dot: string; letter: string }> = {
+  bkash: { bg: "bg-pink-50", ring: "ring-pink-500", dot: "bg-pink-500", letter: "bK" },
+  nagad: { bg: "bg-orange-50", ring: "ring-orange-500", dot: "bg-orange-500", letter: "N" },
+  rocket: { bg: "bg-purple-50", ring: "ring-purple-500", dot: "bg-purple-500", letter: "R" },
 };
 
 function BuyCoursePage() {
