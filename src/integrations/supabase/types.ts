@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      course_chapters: {
+        Row: {
+          chapter_order: number
+          course_id: string
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          chapter_order?: number
+          course_id: string
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          chapter_order?: number
+          course_id?: string
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_chapters_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           category: string | null
@@ -159,6 +194,7 @@ export type Database = {
       }
       lessons: {
         Row: {
+          chapter_id: string | null
           course_id: string
           created_at: string
           duration: string | null
@@ -173,6 +209,7 @@ export type Database = {
           youtube_url: string | null
         }
         Insert: {
+          chapter_id?: string | null
           course_id: string
           created_at?: string
           duration?: string | null
@@ -187,6 +224,7 @@ export type Database = {
           youtube_url?: string | null
         }
         Update: {
+          chapter_id?: string | null
           course_id?: string
           created_at?: string
           duration?: string | null
@@ -201,6 +239,13 @@ export type Database = {
           youtube_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "lessons_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "course_chapters"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lessons_course_id_fkey"
             columns: ["course_id"]

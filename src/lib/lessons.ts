@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type Lesson = {
   id: string;
   course_id: string;
+  chapter_id: string | null;
   title: string;
   slug: string;
   short_description: string | null;
@@ -12,6 +13,13 @@ export type Lesson = {
   is_free_preview: boolean;
   is_published: boolean;
   created_at: string;
+};
+
+export type Chapter = {
+  id: string;
+  course_id: string;
+  title: string;
+  chapter_order: number;
 };
 
 export function slugify(input: string): string {
