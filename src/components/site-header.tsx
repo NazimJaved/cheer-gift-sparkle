@@ -43,7 +43,7 @@ export function SiteHeader() {
             </span>
           )}
           <span className="text-lg font-semibold tracking-tight">
-            {branding.brand_name || "আমিনশিপ একাডেমি"}
+            {branding.brand_name || "JB iT Academy"}
           </span>
         </Link>
         <nav className="hidden items-center gap-1 md:flex">
