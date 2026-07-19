@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { Menu, X, GraduationCap } from "lucide-react";
+import { Menu, X, GraduationCap, Bell } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/lib/use-admin";
 import { useSiteContent, useSignedImage } from "@/lib/site-content";
+import { useNotifications } from "@/lib/db-notifications";
 
 const nav = [
   { to: "/", label: "হোম" },
@@ -22,6 +23,7 @@ export function SiteHeader() {
   const navigate = useNavigate();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { unread } = useNotifications();
 
   async function handleSignOut() {
     await queryClient.cancelQueries();
@@ -71,10 +73,28 @@ export function SiteHeader() {
                 </Link>
               ) : null}
               <Link
+                to="/notifications"
+                aria-label="নোটিফিকেশন"
+                className="relative rounded-md p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
+              >
+                <Bell className="h-5 w-5" />
+                {unread > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
+              </Link>
+              <Link
                 to="/dashboard"
                 className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
               >
                 ড্যাশবোর্ড
+              </Link>
+              <Link
+                to="/profile"
+                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+              >
+                প্রোফাইল
               </Link>
               <button
                 onClick={handleSignOut}
