@@ -24,6 +24,7 @@ import {
   Pencil,
   Plus,
   Search,
+  Save,
   Sparkles,
   Trash2,
 } from "lucide-react";
