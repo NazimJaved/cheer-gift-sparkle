@@ -127,6 +127,27 @@ export function LessonForm({
       </div>
 
       <div>
+        <label className="mb-1 block text-sm font-medium">চ্যাপ্টার / সেকশন</label>
+        <select
+          className={inputCls}
+          value={f.chapter_id ?? ""}
+          onChange={(e) => set("chapter_id", e.target.value || null)}
+        >
+          <option value="">— কোনো চ্যাপ্টার নয় —</option>
+          {chapters.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.title}
+            </option>
+          ))}
+        </select>
+        {chapters.length === 0 && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            লেসন তালিকা পৃষ্ঠা থেকে প্রথমে চ্যাপ্টার যোগ করুন।
+          </p>
+        )}
+      </div>
+
+      <div>
         <label className="mb-1 block text-sm font-medium">স্লাগ</label>
         <input
           className={inputCls}
