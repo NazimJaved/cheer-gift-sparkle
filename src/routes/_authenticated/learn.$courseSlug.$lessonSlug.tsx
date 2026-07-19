@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -12,12 +12,21 @@ import {
   Sparkles,
   AlertTriangle,
   RefreshCw,
+  Maximize2,
+  Gauge,
+  StickyNote,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { youtubeEmbedUrl, type Lesson } from "@/lib/lessons";
+import { youtubeEmbedUrl, type Chapter, type Lesson } from "@/lib/lessons";
+
+const NotesPanel = lazy(() => import("@/components/learn/notes-panel").then((m) => ({ default: m.NotesPanel })));
+const ResourcesPanel = lazy(() =>
+  import("@/components/learn/resources-panel").then((m) => ({ default: m.ResourcesPanel })),
+);
 
 export const Route = createFileRoute("/_authenticated/learn/$courseSlug/$lessonSlug")({
   component: LessonPlayerPage,
@@ -33,8 +42,12 @@ function LessonPlayerPage() {
   const [course, setCourse] = useState<CourseRow | null>(null);
   const [enrolled, setEnrolled] = useState(false);
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [savingProgress, setSavingProgress] = useState(false);
+  const [tab, setTab] = useState<"notes" | "resources">("notes");
+  const playerWrapRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const savedInitial = useRef(false);
 
   const current = useMemo(() => lessons.find((l) => l.slug === lessonSlug) ?? null, [lessons, lessonSlug]);
@@ -81,6 +94,12 @@ function LessonPlayerPage() {
         .order("lesson_order", { ascending: true });
       if (error) toast.error(error.message);
       setLessons((ls ?? []) as Lesson[]);
+      const { data: chs } = await supabase
+        .from("course_chapters")
+        .select("id,course_id,title,chapter_order")
+        .eq("course_id", c.id)
+        .order("chapter_order", { ascending: true });
+      setChapters((chs ?? []) as Chapter[]);
 
       if (user && enrolledNow) {
         const { data: prog } = await supabase
@@ -118,6 +137,61 @@ function LessonPlayerPage() {
   useEffect(() => {
     savedInitial.current = false;
   }, [lessonSlug]);
+
+  // Auto-save last_watched_at heartbeat every 20s
+  useEffect(() => {
+    if (!user || !course || !current) return;
+    const canView = enrolled || current.is_free_preview;
+    if (!canView) return;
+    const iv = setInterval(() => {
+      supabase
+        .from("lesson_progress")
+        .upsert(
+          {
+            user_id: user.id,
+            course_id: course.id,
+            lesson_id: current.id,
+            last_watched_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,lesson_id" },
+        )
+        .then(() => {});
+    }, 20000);
+    return () => clearInterval(iv);
+  }, [user, course, current, enrolled]);
+
+  function goPrev() {
+    if (prev) navigate({ to: "/learn/$courseSlug/$lessonSlug", params: { courseSlug, lessonSlug: prev.slug } });
+  }
+  function goNext() {
+    if (next) navigate({ to: "/learn/$courseSlug/$lessonSlug", params: { courseSlug, lessonSlug: next.slug } });
+  }
+  function toggleFullscreen() {
+    const el = playerWrapRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) document.exitFullscreen();
+    else el.requestFullscreen?.();
+  }
+  function setPlaybackRate(rate: number) {
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "command", func: "setPlaybackRate", args: [rate] }),
+      "*",
+    );
+  }
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+      if (e.key === "ArrowLeft") { e.preventDefault(); goPrev(); }
+      else if (e.key === "ArrowRight") { e.preventDefault(); goNext(); }
+      else if (e.key.toLowerCase() === "f") { e.preventDefault(); toggleFullscreen(); }
+      else if (e.key.toLowerCase() === "n") { e.preventDefault(); setTab("notes"); }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [prev, next]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function markComplete() {
     if (!user || !course || !current) return;
@@ -185,6 +259,12 @@ function LessonPlayerPage() {
   const done = completedIds.size;
   const progressPct = total > 0 ? Math.round((done / total) * 100) : 0;
 
+  const grouped: { chapter: Chapter | null; lessons: Lesson[] }[] = [
+    ...chapters.map((c) => ({ chapter: c, lessons: lessons.filter((l) => l.chapter_id === c.id) })),
+    { chapter: null, lessons: lessons.filter((l) => !l.chapter_id) },
+  ].filter((g) => g.lessons.length > 0);
+  const showChapterHeaders = chapters.length > 0;
+
   return (
     <SiteLayout>
       <div className="mx-auto max-w-7xl px-4 py-6 lg:py-10">
@@ -208,7 +288,7 @@ function LessonPlayerPage() {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div>
-            <div className="relative">
+            <div className="relative" ref={playerWrapRef}>
               {/* ambient glow */}
               <div
                 aria-hidden
@@ -223,9 +303,16 @@ function LessonPlayerPage() {
                     <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
                   </div>
                   <span className="max-w-[60%] truncate font-medium">{current.title}</span>
-                  <span className="hidden sm:inline text-[10px] uppercase tracking-wider text-white/40">
-                    HD • {current.duration || "লেসন"}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <PlaybackRateMenu onSelect={setPlaybackRate} />
+                    <button
+                      onClick={toggleFullscreen}
+                      title="ফুলস্ক্রিন (F)"
+                      className="rounded p-1 text-white/70 hover:bg-white/10 hover:text-white"
+                    >
+                      <Maximize2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
                 {canView ? (
                   embed ? (
@@ -234,6 +321,7 @@ function LessonPlayerPage() {
                       rawUrl={current.youtube_url}
                       title={current.title}
                       lessonId={current.id}
+                      iframeRef={iframeRef}
                     />
                   ) : (
                     <UnparseableVideo rawUrl={current.youtube_url} />
@@ -256,26 +344,16 @@ function LessonPlayerPage() {
                   <div className="flex gap-2">
                     <button
                       disabled={!prev}
-                      onClick={() =>
-                        prev &&
-                        navigate({
-                          to: "/learn/$courseSlug/$lessonSlug",
-                          params: { courseSlug, lessonSlug: prev.slug },
-                        })
-                      }
+                      onClick={goPrev}
+                      title="পূর্ববর্তী (←)"
                       className="inline-flex items-center gap-1 rounded-md border border-input px-3 py-2 text-sm hover:bg-secondary disabled:opacity-40"
                     >
                       <ChevronLeft className="h-4 w-4" /> পূর্ববর্তী
                     </button>
                     <button
                       disabled={!next}
-                      onClick={() =>
-                        next &&
-                        navigate({
-                          to: "/learn/$courseSlug/$lessonSlug",
-                          params: { courseSlug, lessonSlug: next.slug },
-                        })
-                      }
+                      onClick={goNext}
+                      title="পরবর্তী (→)"
                       className="inline-flex items-center gap-1 rounded-md border border-input px-3 py-2 text-sm hover:bg-secondary disabled:opacity-40"
                     >
                       পরবর্তী <ChevronRight className="h-4 w-4" />
@@ -301,6 +379,38 @@ function LessonPlayerPage() {
                     {completedIds.has(current.id) ? "সম্পন্ন" : "সম্পন্ন হিসেবে চিহ্নিত করুন"}
                   </button>
                 </div>
+
+                {/* Notes / Resources tabs */}
+                <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
+                  <div className="flex border-b border-border">
+                    <button
+                      onClick={() => setTab("notes")}
+                      className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium ${
+                        tab === "notes" ? "border-b-2 border-teal text-teal" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <StickyNote className="h-4 w-4" /> নোট
+                    </button>
+                    <button
+                      onClick={() => setTab("resources")}
+                      className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium ${
+                        tab === "resources" ? "border-b-2 border-teal text-teal" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <FileText className="h-4 w-4" /> রিসোর্স
+                    </button>
+                  </div>
+                  <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">লোড হচ্ছে...</div>}>
+                    {tab === "notes" ? (
+                      <NotesPanel lessonId={current.id} courseId={course.id} />
+                    ) : (
+                      <ResourcesPanel lessonId={current.id} />
+                    )}
+                  </Suspense>
+                </div>
+                <p className="mt-3 text-[11px] text-muted-foreground">
+                  কীবোর্ড: ← পূর্ববর্তী · → পরবর্তী · F ফুলস্ক্রিন · N নোট
+                </p>
               </>
             )}
           </div>
@@ -322,58 +432,95 @@ function LessonPlayerPage() {
                 </div>
                 <div className="mt-2 text-xs text-muted-foreground">{progressPct}% সম্পন্ন</div>
               </div>
-              <ul className="max-h-[60vh] divide-y divide-border overflow-y-auto">
-                {lessons.map((l, i) => {
-                  const isCurrent = l.id === current.id;
-                  const isDone = completedIds.has(l.id);
-                  const locked = !enrolled && !l.is_free_preview;
+              <div className="max-h-[60vh] overflow-y-auto">
+                {grouped.map((g) => {
                   return (
-                    <li key={l.id}>
-                      <Link
-                        to="/learn/$courseSlug/$lessonSlug"
-                        params={{ courseSlug, lessonSlug: l.slug }}
-                        className={`flex items-center gap-3 p-3 text-sm hover:bg-secondary ${
-                          isCurrent ? "bg-teal/10" : ""
-                        }`}
-                      >
-                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-secondary text-xs font-semibold">
-                          {i + 1}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <div className={`truncate ${isCurrent ? "font-semibold text-teal" : ""}`}>
-                            {l.title}
-                          </div>
-                          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-                            {l.duration && <span>{l.duration}</span>}
-                            {l.is_free_preview && (
-                              <span className="inline-flex items-center gap-0.5 text-green">
-                                <Sparkles className="h-3 w-3" /> প্রিভিউ
-                              </span>
-                            )}
-                          </div>
+                    <div key={g.chapter?.id ?? "__none"}>
+                      {showChapterHeaders && (
+                        <div className="sticky top-0 bg-gradient-to-r from-teal/10 via-teal/5 to-transparent px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-teal">
+                          {g.chapter ? g.chapter.title : "অন্যান্য"}
                         </div>
-                        {locked ? (
-                          <Lock className="h-4 w-4 text-muted-foreground" />
-                        ) : isDone ? (
-                          <CheckCircle2 className="h-4 w-4 text-green" />
-                        ) : (
-                          <PlayCircle className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Link>
-                    </li>
+                      )}
+                      <ul className="divide-y divide-border">
+                        {g.lessons.map((l) => {
+                          const idx = lessons.findIndex((x) => x.id === l.id);
+                          const isCurrent = l.id === current.id;
+                          const isDone = completedIds.has(l.id);
+                          const locked = !enrolled && !l.is_free_preview;
+                          return (
+                            <li key={l.id}>
+                              <Link
+                                to="/learn/$courseSlug/$lessonSlug"
+                                params={{ courseSlug, lessonSlug: l.slug }}
+                                className={`flex items-center gap-3 p-3 text-sm hover:bg-secondary ${isCurrent ? "bg-teal/10" : ""}`}
+                              >
+                                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-secondary text-xs font-semibold">
+                                  {idx + 1}
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <div className={`truncate ${isCurrent ? "font-semibold text-teal" : ""}`}>{l.title}</div>
+                                  <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                                    {l.duration && <span>{l.duration}</span>}
+                                    {l.is_free_preview && (
+                                      <span className="inline-flex items-center gap-0.5 text-green">
+                                        <Sparkles className="h-3 w-3" /> প্রিভিউ
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                {locked ? (
+                                  <Lock className="h-4 w-4 text-muted-foreground" />
+                                ) : isDone ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green" />
+                                ) : (
+                                  <PlayCircle className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
                   );
                 })}
                 {lessons.length === 0 && (
-                  <li className="p-4 text-center text-sm text-muted-foreground">
-                    এখনও লেসন নেই
-                  </li>
+                  <div className="p-4 text-center text-sm text-muted-foreground">এখনও লেসন নেই</div>
                 )}
-              </ul>
+              </div>
             </div>
           </aside>
         </div>
       </div>
     </SiteLayout>
+  );
+}
+
+function PlaybackRateMenu({ onSelect }: { onSelect: (r: number) => void }) {
+  const [open, setOpen] = useState(false);
+  const rates = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        title="প্লেব্যাক গতি"
+        className="rounded p-1 text-white/70 hover:bg-white/10 hover:text-white"
+      >
+        <Gauge className="h-3.5 w-3.5" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-20 mt-1 w-20 overflow-hidden rounded-md border border-white/10 bg-black/95 py-1 text-xs shadow-lg">
+          {rates.map((r) => (
+            <button
+              key={r}
+              onClick={() => { onSelect(r); setOpen(false); }}
+              className="block w-full px-3 py-1 text-left text-white/80 hover:bg-white/10"
+            >
+              {r}x
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -406,12 +553,15 @@ function LessonVideoFrame({
   rawUrl,
   title,
   lessonId,
+  iframeRef,
 }: {
   embed: string;
   rawUrl: string | null;
   title: string;
   lessonId: string;
+  iframeRef?: React.MutableRefObject<HTMLIFrameElement | null>;
 }) {
+  void rawUrl;
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [attempt, setAttempt] = useState(0);
 
@@ -441,7 +591,8 @@ function LessonVideoFrame({
       )}
       <iframe
         key={`${lessonId}-${attempt}`}
-        src={embed}
+        ref={iframeRef}
+        src={embed + "&enablejsapi=1"}
         title={title}
         className="absolute inset-0 h-full w-full"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
