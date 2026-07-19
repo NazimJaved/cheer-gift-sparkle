@@ -59,7 +59,7 @@ function CourseCard({ c }: { c: DbCourse }) {
     <Link
       to="/courses/$slug"
       params={{ slug: c.slug }}
-      className="group flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-2xl"
+      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-2xl"
     >
       <div className="relative flex aspect-video items-center justify-center overflow-hidden bg-gradient-to-br from-teal/20 to-green/30">
         {thumb ? (
