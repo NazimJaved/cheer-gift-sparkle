@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { SiteLayout } from "@/components/site-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import type { Lesson } from "@/lib/lessons";
+import { extractYouTubeId, type Lesson } from "@/lib/lessons";
 
 export const Route = createFileRoute("/_authenticated/learn/$courseSlug")({
   component: LearnCourseIndex,
@@ -22,6 +22,7 @@ function LearnCourseIndex() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [resumeLessonSlug, setResumeLessonSlug] = useState<string | null>(null);
+  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -74,6 +75,9 @@ function LearnCourseIndex() {
         .eq("is_published", true)
         .order("lesson_order", { ascending: true });
       setLessons((ls ?? []) as Lesson[]);
+      // pick initial preview: resume lesson if available, else first
+      const initial = (ls ?? []).find((x) => x.slug === (resumeLessonSlug ?? "")) ?? (ls ?? [])[0];
+      if (initial) setActiveLessonId(initial.id);
       setLoading(false);
     })();
   }, [courseSlug, user]);
@@ -120,10 +124,12 @@ function LearnCourseIndex() {
   const done = completedIds.size;
   const total = lessons.length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const activeLesson = lessons.find((l) => l.id === activeLessonId) ?? lessons[0];
+  const activeVideoId = activeLesson ? extractYouTubeId(activeLesson.youtube_url) : null;
 
   return (
     <SiteLayout>
-      <div className="mx-auto max-w-4xl px-4 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-10">
         <Link
           to="/courses/$slug"
           params={{ slug: courseSlug }}
@@ -153,18 +159,27 @@ function LearnCourseIndex() {
           </div>
         </div>
 
-        <h2 className="mt-8 mb-3 text-lg font-bold">সব লেসন</h2>
-        <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
+          <div className="order-2 lg:order-1">
+            <h2 className="mb-3 text-lg font-bold">সব লেসন</h2>
+            <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
           {lessons.map((l, i) => {
             const isDone = completedIds.has(l.id);
+            const isActive = activeLesson?.id === l.id;
             return (
               <li key={l.id}>
-                <Link
-                  to="/learn/$courseSlug/$lessonSlug"
-                  params={{ courseSlug, lessonSlug: l.slug }}
-                  className="flex items-center gap-3 p-4 hover:bg-secondary"
+                <button
+                  type="button"
+                  onClick={() => setActiveLessonId(l.id)}
+                  className={`flex w-full items-center gap-3 p-4 text-left transition hover:bg-secondary ${
+                    isActive ? "bg-teal/5" : ""
+                  }`}
                 >
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-secondary text-xs font-semibold">
+                  <span
+                    className={`grid h-8 w-8 shrink-0 place-items-center rounded-md text-xs font-semibold ${
+                      isActive ? "bg-teal text-teal-foreground" : "bg-secondary"
+                    }`}
+                  >
                     {i + 1}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -181,13 +196,57 @@ function LearnCourseIndex() {
                   {isDone ? (
                     <CheckCircle2 className="h-5 w-5 text-green" />
                   ) : (
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    <PlayCircle className={`h-5 w-5 ${isActive ? "text-teal" : "text-muted-foreground"}`} />
                   )}
-                </Link>
+                </button>
               </li>
             );
           })}
-        </ul>
+            </ul>
+          </div>
+
+          <aside className="order-1 lg:order-2 lg:sticky lg:top-24 lg:self-start">
+            <div className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-slate-900 via-slate-950 to-black p-2 shadow-[0_20px_60px_-20px_rgba(20,184,166,0.35)]">
+              <div className="pointer-events-none absolute -inset-16 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(20,184,166,0.35),transparent_70%)]" />
+              <div className="relative aspect-video overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
+                {activeVideoId ? (
+                  <iframe
+                    key={activeVideoId}
+                    src={`https://www.youtube.com/embed/${activeVideoId}?rel=0&modestbranding=1`}
+                    title={activeLesson?.title ?? "lesson"}
+                    className="h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="grid h-full w-full place-items-center text-center text-sm text-white/70">
+                    <div>
+                      <PlayCircle className="mx-auto h-10 w-10 text-white/40" />
+                      <p className="mt-2">ভিডিও পাওয়া যায়নি</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="relative flex items-start justify-between gap-3 px-3 py-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] uppercase tracking-wider text-teal">এখন দেখছেন</p>
+                  <p className="mt-0.5 truncate text-sm font-semibold text-white">
+                    {activeLesson?.title ?? "—"}
+                  </p>
+                </div>
+                {activeLesson && (
+                  <Link
+                    to="/learn/$courseSlug/$lessonSlug"
+                    params={{ courseSlug, lessonSlug: activeLesson.slug }}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md bg-teal px-3 py-1.5 text-xs font-medium text-teal-foreground hover:bg-teal/90"
+                  >
+                    ফুল ভিউ <ChevronRight className="h-3 w-3" />
+                  </Link>
+                )}
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
     </SiteLayout>
   );
