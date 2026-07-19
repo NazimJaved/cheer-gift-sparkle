@@ -3,7 +3,7 @@ import { Clock, PlayCircle, Award, CheckCircle2, User, Globe, ArrowLeft } from "
 import { SiteLayout } from "@/components/site-layout";
 import { useCourseBySlug, useSignedCourseThumb, formatPrice } from "@/lib/db-courses";
 
-export const Route = createFileRoute("/courses/$slug")({
+export const Route = createFileRoute("/courses/$slug/")({
   component: CourseDetail,
 });
 
