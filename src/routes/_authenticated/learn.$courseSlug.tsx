@@ -159,7 +159,7 @@ function LearnCourseIndex() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="mt-8 grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
           <div className="order-2 lg:order-1">
             <h2 className="mb-3 text-lg font-bold">সব লেসন</h2>
             <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
@@ -206,18 +206,23 @@ function LearnCourseIndex() {
           </div>
 
           <aside className="order-1 lg:order-2 lg:sticky lg:top-24 lg:self-start">
-            <div className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-slate-900 via-slate-950 to-black p-2 shadow-[0_20px_60px_-20px_rgba(20,184,166,0.35)]">
+            <div className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-slate-900 via-slate-950 to-black p-2 shadow-[0_30px_80px_-20px_rgba(20,184,166,0.45)]">
               <div className="pointer-events-none absolute -inset-16 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(20,184,166,0.35),transparent_70%)]" />
               <div className="relative aspect-video overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
                 {activeVideoId ? (
-                  <iframe
-                    key={activeVideoId}
-                    src={`https://www.youtube.com/embed/${activeVideoId}?rel=0&modestbranding=1`}
-                    title={activeLesson?.title ?? "lesson"}
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                    allowFullScreen
-                  />
+                  <>
+                    <iframe
+                      key={activeVideoId}
+                      src={`https://www.youtube-nocookie.com/embed/${activeVideoId}?rel=0&modestbranding=1&showinfo=0&controls=1&iv_load_policy=3&fs=1&playsinline=1&disablekb=1&color=white`}
+                      title={activeLesson?.title ?? "lesson"}
+                      className="h-full w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                      allowFullScreen
+                    />
+                    {/* Cover YouTube logo (bottom-right) and title bar (top) */}
+                    <div className="pointer-events-none absolute right-0 bottom-0 h-10 w-28 bg-black" />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black to-transparent" />
+                  </>
                 ) : (
                   <div className="grid h-full w-full place-items-center text-center text-sm text-white/70">
                     <div>
