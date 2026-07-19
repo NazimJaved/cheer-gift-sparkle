@@ -20,10 +20,13 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CoursesSlugRouteImport } from './routes/courses.$slug'
+import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as CoursesSlugBuyRouteImport } from './routes/courses.$slug.buy'
 import { Route as AuthenticatedLearnCourseSlugRouteImport } from './routes/_authenticated/learn.$courseSlug'
+import { Route as AuthenticatedAdminPaymentsRouteImport } from './routes/_authenticated/admin.payments'
 import { Route as AuthenticatedAdminCoursesRouteImport } from './routes/_authenticated/admin.courses'
 import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin.content'
 import { Route as AuthenticatedLearnCourseSlugLessonSlugRouteImport } from './routes/_authenticated/learn.$courseSlug.$lessonSlug'
@@ -89,6 +92,11 @@ const CoursesSlugRoute = CoursesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => CoursesRoute,
 } as any)
+const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -104,11 +112,22 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const CoursesSlugBuyRoute = CoursesSlugBuyRouteImport.update({
+  id: '/buy',
+  path: '/buy',
+  getParentRoute: () => CoursesSlugRoute,
+} as any)
 const AuthenticatedLearnCourseSlugRoute =
   AuthenticatedLearnCourseSlugRouteImport.update({
     id: '/learn/$courseSlug',
     path: '/learn/$courseSlug',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminPaymentsRoute =
+  AuthenticatedAdminPaymentsRouteImport.update({
+    id: '/payments',
+    path: '/payments',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminCoursesRoute =
   AuthenticatedAdminCoursesRouteImport.update({
@@ -183,10 +202,13 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/courses/$slug': typeof CoursesSlugRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
+  '/courses/$slug': typeof CoursesSlugRouteWithChildren
   '/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
+  '/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRouteWithChildren
+  '/courses/$slug/buy': typeof CoursesSlugBuyRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/content/$page': typeof AuthenticatedAdminContentPageRoute
   '/admin/courses/new': typeof AuthenticatedAdminCoursesNewRoute
@@ -208,10 +230,13 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/courses/$slug': typeof CoursesSlugRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
+  '/courses/$slug': typeof CoursesSlugRouteWithChildren
   '/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
+  '/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRouteWithChildren
+  '/courses/$slug/buy': typeof CoursesSlugBuyRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/content/$page': typeof AuthenticatedAdminContentPageRoute
   '/admin/courses/new': typeof AuthenticatedAdminCoursesNewRoute
@@ -236,10 +261,13 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/courses/$slug': typeof CoursesSlugRoute
+  '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
+  '/courses/$slug': typeof CoursesSlugRouteWithChildren
   '/_authenticated/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/_authenticated/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
+  '/_authenticated/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/_authenticated/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRouteWithChildren
+  '/courses/$slug/buy': typeof CoursesSlugBuyRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/content/$page': typeof AuthenticatedAdminContentPageRoute
   '/_authenticated/admin/courses/new': typeof AuthenticatedAdminCoursesNewRoute
@@ -264,10 +292,13 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/dashboard'
+    | '/payments'
     | '/courses/$slug'
     | '/admin/content'
     | '/admin/courses'
+    | '/admin/payments'
     | '/learn/$courseSlug'
+    | '/courses/$slug/buy'
     | '/admin/'
     | '/admin/content/$page'
     | '/admin/courses/new'
@@ -289,10 +320,13 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/dashboard'
+    | '/payments'
     | '/courses/$slug'
     | '/admin/content'
     | '/admin/courses'
+    | '/admin/payments'
     | '/learn/$courseSlug'
+    | '/courses/$slug/buy'
     | '/admin'
     | '/admin/content/$page'
     | '/admin/courses/new'
@@ -316,10 +350,13 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
+    | '/_authenticated/payments'
     | '/courses/$slug'
     | '/_authenticated/admin/content'
     | '/_authenticated/admin/courses'
+    | '/_authenticated/admin/payments'
     | '/_authenticated/learn/$courseSlug'
+    | '/courses/$slug/buy'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/content/$page'
     | '/_authenticated/admin/courses/new'
@@ -423,6 +460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesSlugRouteImport
       parentRoute: typeof CoursesRoute
     }
+    '/_authenticated/payments': {
+      id: '/_authenticated/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -444,12 +488,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/courses/$slug/buy': {
+      id: '/courses/$slug/buy'
+      path: '/buy'
+      fullPath: '/courses/$slug/buy'
+      preLoaderRoute: typeof CoursesSlugBuyRouteImport
+      parentRoute: typeof CoursesSlugRoute
+    }
     '/_authenticated/learn/$courseSlug': {
       id: '/_authenticated/learn/$courseSlug'
       path: '/learn/$courseSlug'
       fullPath: '/learn/$courseSlug'
       preLoaderRoute: typeof AuthenticatedLearnCourseSlugRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/payments': {
+      id: '/_authenticated/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AuthenticatedAdminPaymentsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/courses': {
       id: '/_authenticated/admin/courses'
@@ -578,6 +636,7 @@ const AuthenticatedAdminCoursesRouteWithChildren =
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminContentRoute: typeof AuthenticatedAdminContentRouteWithChildren
   AuthenticatedAdminCoursesRoute: typeof AuthenticatedAdminCoursesRouteWithChildren
+  AuthenticatedAdminPaymentsRoute: typeof AuthenticatedAdminPaymentsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminEditPageRoute: typeof AuthenticatedAdminEditPageRoute
 }
@@ -585,6 +644,7 @@ interface AuthenticatedAdminRouteChildren {
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminContentRoute: AuthenticatedAdminContentRouteWithChildren,
   AuthenticatedAdminCoursesRoute: AuthenticatedAdminCoursesRouteWithChildren,
+  AuthenticatedAdminPaymentsRoute: AuthenticatedAdminPaymentsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminEditPageRoute: AuthenticatedAdminEditPageRoute,
 }
@@ -610,12 +670,14 @@ const AuthenticatedLearnCourseSlugRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedLearnCourseSlugRoute: typeof AuthenticatedLearnCourseSlugRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedLearnCourseSlugRoute:
     AuthenticatedLearnCourseSlugRouteWithChildren,
 }
@@ -623,12 +685,24 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface CoursesSlugRouteChildren {
+  CoursesSlugBuyRoute: typeof CoursesSlugBuyRoute
+}
+
+const CoursesSlugRouteChildren: CoursesSlugRouteChildren = {
+  CoursesSlugBuyRoute: CoursesSlugBuyRoute,
+}
+
+const CoursesSlugRouteWithChildren = CoursesSlugRoute._addFileChildren(
+  CoursesSlugRouteChildren,
+)
+
 interface CoursesRouteChildren {
-  CoursesSlugRoute: typeof CoursesSlugRoute
+  CoursesSlugRoute: typeof CoursesSlugRouteWithChildren
 }
 
 const CoursesRouteChildren: CoursesRouteChildren = {
-  CoursesSlugRoute: CoursesSlugRoute,
+  CoursesSlugRoute: CoursesSlugRouteWithChildren,
 }
 
 const CoursesRouteWithChildren =
