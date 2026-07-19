@@ -35,9 +35,11 @@ function CoursesPage() {
           ) : courses.length === 0 ? (
             <p className="text-center text-muted-foreground">এখনো কোনো কোর্স প্রকাশিত হয়নি।</p>
           ) : (
-            <div className="mx-auto grid max-w-6xl justify-center gap-8 sm:grid-cols-2 lg:grid-cols-3 [&>*]:w-full [&>*]:max-w-sm">
+            <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-8">
               {courses.map((c) => (
-                <CourseCard key={c.id} c={c} />
+                <div key={c.id} className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] max-w-sm">
+                  <CourseCard c={c} />
+                </div>
               ))}
             </div>
           )}
