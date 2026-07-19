@@ -3,13 +3,14 @@ import { Home, BookOpen, LayoutDashboard, Bell, User } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/db-notifications";
 
-const items = [
+type Item = { to: string; label: string; icon: typeof Home; exact?: boolean };
+const items: Item[] = [
   { to: "/", label: "হোম", icon: Home, exact: true },
   { to: "/courses", label: "কোর্স", icon: BookOpen },
   { to: "/dashboard", label: "ড্যাশ", icon: LayoutDashboard },
   { to: "/notifications", label: "নোটিফ", icon: Bell },
   { to: "/profile", label: "প্রোফাইল", icon: User },
-] as const;
+];
 
 export function MobileBottomNav() {
   const { user } = useAuth();
