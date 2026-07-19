@@ -1,10 +1,11 @@
-import { createFileRoute, Navigate, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, Lock, ArrowLeft, PlayCircle } from "lucide-react";
+import { Loader2, Lock, ArrowLeft, PlayCircle, CheckCircle2, Sparkles, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import type { Lesson } from "@/lib/lessons";
 
 export const Route = createFileRoute("/_authenticated/learn/$courseSlug")({
   component: LearnCourseIndex,
@@ -18,7 +19,8 @@ function LearnCourseIndex() {
   const [loading, setLoading] = useState(true);
   const [course, setCourse] = useState<CourseInfo | null>(null);
   const [enrolled, setEnrolled] = useState(false);
-  const [firstLessonSlug, setFirstLessonSlug] = useState<string | null>(null);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [resumeLessonSlug, setResumeLessonSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,31 +51,29 @@ function LearnCourseIndex() {
         // Resume: last watched incomplete lesson
         const { data: progress } = await supabase
           .from("lesson_progress")
-          .select("lesson_id, last_watched_at")
+          .select("lesson_id, last_watched_at, completed")
           .eq("user_id", user.id)
           .eq("course_id", c.id)
-          .order("last_watched_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (progress?.lesson_id) {
+          .order("last_watched_at", { ascending: false });
+        const last = progress?.[0];
+        if (last?.lesson_id) {
           const { data: lastLesson } = await supabase
             .from("lessons")
             .select("slug")
-            .eq("id", progress.lesson_id)
+            .eq("id", last.lesson_id)
             .maybeSingle();
           if (lastLesson) setResumeLessonSlug(lastLesson.slug);
         }
+        setCompletedIds(new Set((progress ?? []).filter((p) => p.completed).map((p) => p.lesson_id)));
       }
 
-      const { data: first } = await supabase
+      const { data: ls } = await supabase
         .from("lessons")
-        .select("slug")
+        .select("*")
         .eq("course_id", c.id)
         .eq("is_published", true)
-        .order("lesson_order", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      setFirstLessonSlug(first?.slug ?? null);
+        .order("lesson_order", { ascending: true });
+      setLessons((ls ?? []) as Lesson[]);
       setLoading(false);
     })();
   }, [courseSlug, user]);
@@ -105,8 +105,7 @@ function LearnCourseIndex() {
     return <PurchaseView course={course} />;
   }
 
-  const target = resumeLessonSlug ?? firstLessonSlug;
-  if (!target) {
+  if (lessons.length === 0) {
     return (
       <SiteLayout>
         <div className="mx-auto max-w-2xl px-4 py-24 text-center">
@@ -116,12 +115,81 @@ function LearnCourseIndex() {
       </SiteLayout>
     );
   }
+
+  const resumeTarget = resumeLessonSlug ?? lessons[0].slug;
+  const done = completedIds.size;
+  const total = lessons.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
   return (
-    <Navigate
-      to="/learn/$courseSlug/$lessonSlug"
-      params={{ courseSlug, lessonSlug: target }}
-      replace
-    />
+    <SiteLayout>
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        <Link
+          to="/courses/$slug"
+          params={{ slug: courseSlug }}
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-3 w-3" /> কোর্স বিবরণ
+        </Link>
+        <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{course.title}</h1>
+
+        <div className="mt-6 rounded-2xl border border-border bg-card p-5">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-semibold">কোর্স প্রগ্রেস</span>
+            <span className="text-muted-foreground">{done}/{total}</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
+            <div className="h-full bg-teal transition-all" style={{ width: `${pct}%` }} />
+          </div>
+          <div className="mt-4">
+            <Link
+              to="/learn/$courseSlug/$lessonSlug"
+              params={{ courseSlug, lessonSlug: resumeTarget }}
+              className="inline-flex items-center gap-2 rounded-md bg-teal px-4 py-2.5 text-sm font-medium text-teal-foreground hover:bg-teal/90"
+            >
+              <PlayCircle className="h-4 w-4" />
+              {resumeLessonSlug ? "চালিয়ে যান" : "শুরু করুন"}
+            </Link>
+          </div>
+        </div>
+
+        <h2 className="mt-8 mb-3 text-lg font-bold">সব লেসন</h2>
+        <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+          {lessons.map((l, i) => {
+            const isDone = completedIds.has(l.id);
+            return (
+              <li key={l.id}>
+                <Link
+                  to="/learn/$courseSlug/$lessonSlug"
+                  params={{ courseSlug, lessonSlug: l.slug }}
+                  className="flex items-center gap-3 p-4 hover:bg-secondary"
+                >
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-secondary text-xs font-semibold">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium">{l.title}</div>
+                    <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                      {l.duration && <span>{l.duration}</span>}
+                      {l.is_free_preview && (
+                        <span className="inline-flex items-center gap-0.5 text-green">
+                          <Sparkles className="h-3 w-3" /> প্রিভিউ
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {isDone ? (
+                    <CheckCircle2 className="h-5 w-5 text-green" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </SiteLayout>
   );
 }
 
