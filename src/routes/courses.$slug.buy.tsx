@@ -372,11 +372,50 @@ function BuyCoursePage() {
   );
 }
 
-function Field({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
+function Field({
+  label,
+  children,
+  full,
+  icon,
+  required,
+}: {
+  label: string;
+  children: React.ReactNode;
+  full?: boolean;
+  icon?: React.ReactNode;
+  required?: boolean;
+}) {
   return (
     <label className={`block text-sm ${full ? "sm:col-span-2" : ""}`}>
-      <span className="mb-1 block font-medium">{label}</span>
+      <span className="mb-1.5 flex items-center gap-1.5 font-medium">
+        {icon ? <span className="text-teal">{icon}</span> : null}
+        {label}
+        {required ? <span className="text-red-500">*</span> : null}
+      </span>
       {children}
     </label>
+  );
+}
+
+function StepBadge({ n }: { n: number }) {
+  return (
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal to-green text-sm font-bold text-white shadow-sm">
+      {n}
+    </span>
+  );
+}
+
+function Row({ label, value, muted, accent }: { label: string; value: string; muted?: boolean; accent?: boolean }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span
+        className={`font-medium ${muted ? "text-muted-foreground line-through" : ""} ${
+          accent ? "text-green" : ""
+        }`}
+      >
+        {value}
+      </span>
+    </div>
   );
 }
