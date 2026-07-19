@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Loader2, LayoutDashboard, BookOpen, FileText, Paintbrush, Receipt } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
 import { useIsAdmin } from "@/lib/use-admin";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 function AdminLayout() {
   const { isAdmin, loading } = useIsAdmin();
+  const { isSuperAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,13 +56,15 @@ function AdminLayout() {
             >
               <BookOpen className="h-4 w-4" /> কোর্স ব্যবস্থাপনা
             </Link>
-            <Link
-              to="/admin/content"
-              className="inline-flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm font-medium hover:bg-secondary"
-              activeProps={{ className: "bg-teal text-teal-foreground border-teal" }}
-            >
-              <FileText className="h-4 w-4" /> কনটেন্ট এডিট
-            </Link>
+            {isSuperAdmin && (
+              <Link
+                to="/admin/content"
+                className="inline-flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm font-medium hover:bg-secondary"
+                activeProps={{ className: "bg-teal text-teal-foreground border-teal" }}
+              >
+                <FileText className="h-4 w-4" /> কনটেন্ট এডিট
+              </Link>
+            )}
             <Link
               to="/admin/payments"
               className="inline-flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm font-medium hover:bg-secondary"
@@ -68,14 +72,16 @@ function AdminLayout() {
             >
               <Receipt className="h-4 w-4" /> পেমেন্ট
             </Link>
-            <Link
-              to="/admin/edit/$page"
-              params={{ page: "home" }}
-              className="inline-flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm font-medium hover:bg-secondary"
-              activeProps={{ className: "bg-teal text-teal-foreground border-teal" }}
-            >
-              <Paintbrush className="h-4 w-4" /> ভিজ্যুয়াল এডিটর
-            </Link>
+            {isSuperAdmin && (
+              <Link
+                to="/admin/edit/$page"
+                params={{ page: "home" }}
+                className="inline-flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm font-medium hover:bg-secondary"
+                activeProps={{ className: "bg-teal text-teal-foreground border-teal" }}
+              >
+                <Paintbrush className="h-4 w-4" /> ভিজ্যুয়াল এডিটর
+              </Link>
+            )}
           </nav>
         </div>
         <Outlet />

@@ -1,14 +1,19 @@
 import { createFileRoute, Link, Outlet, useMatches } from "@tanstack/react-router";
 import { FileText } from "lucide-react";
 import { SITE_CONTENT_SCHEMA } from "@/lib/site-content";
+import { useAuth } from "@/lib/auth-context";
+import { ForbiddenPage } from "@/components/error-pages";
 
 export const Route = createFileRoute("/_authenticated/admin/content")({
   component: AdminContentLayout,
 });
 
 function AdminContentLayout() {
+  const { isSuperAdmin, loading } = useAuth();
   const matches = useMatches();
   const hasChild = matches.some((m) => m.routeId === "/_authenticated/admin/content/$page");
+  if (loading) return null;
+  if (!isSuperAdmin) return <ForbiddenPage />;
   if (hasChild) return <Outlet />;
   return <AdminContentIndex />;
 }

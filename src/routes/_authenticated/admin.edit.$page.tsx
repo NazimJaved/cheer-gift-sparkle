@@ -14,10 +14,19 @@ import {
 } from "@/lib/page-blocks";
 import { BlockRenderer } from "@/components/editor/block-renderer";
 import { Inspector } from "@/components/editor/inspector";
+import { useAuth } from "@/lib/auth-context";
+import { ForbiddenPage } from "@/components/error-pages";
 
 export const Route = createFileRoute("/_authenticated/admin/edit/$page")({
-  component: EditPage,
+  component: EditPageGuard,
 });
+
+function EditPageGuard() {
+  const { isSuperAdmin, loading } = useAuth();
+  if (loading) return null;
+  if (!isSuperAdmin) return <ForbiddenPage />;
+  return <EditPage />;
+}
 
 function EditPage() {
   const { page } = Route.useParams();

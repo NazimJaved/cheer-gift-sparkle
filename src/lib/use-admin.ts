@@ -1,27 +1,14 @@
-import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 
 export function useIsAdmin() {
-  const { user, loading } = useAuth();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const { isAdmin, loading } = useAuth();
+  return { isAdmin, loading };
+}
 
-  useEffect(() => {
-    if (loading) return;
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle()
-      .then(({ data }) => setIsAdmin(!!data));
-  }, [user, loading]);
-
-  return { isAdmin, loading: loading || isAdmin === null };
+export function useIsSuperAdmin() {
+  const { isSuperAdmin, loading } = useAuth();
+  return { isSuperAdmin, loading };
 }
 
 export async function getSignedThumbnailUrl(path: string | null): Promise<string | null> {
