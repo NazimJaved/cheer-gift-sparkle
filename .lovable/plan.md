@@ -1,96 +1,82 @@
-## Goal
+# Secure LMS Refactor Plan
 
-অ্যাডমিন `/admin/edit/:page` তে গিয়ে যেকোনো পাবলিক পেজের **প্রতিটি এলিমেন্ট** (টেক্সট, ইমেজ, কালার, ফন্ট সাইজ, স্পেসিং, সেকশন অর্ডার, সেকশন যোগ/মুছে দেওয়া) সরাসরি লাইভ প্রিভিউতে এডিট করবে ও সংরক্ষণ করবে। ভিজিটররা আপডেটেড ভার্সন দেখবে।
+Goal: harden the app into a production-ready LMS with three roles (super_admin, admin, student), enforced end-to-end via Supabase RLS + route guards + UI, without breaking existing features.
 
-## Architecture
+## 1. Roles & Database (Supabase migration)
 
-```text
-/admin/edit/:page
-├── Left sidebar: page tree + section list (add / delete / reorder)
-├── Center: <iframe src="/{page}?edit=1"> live preview
-└── Right sidebar: property inspector for selected element
-     ├─ Text tab: content, font size, weight, alignment, color
-     ├─ Style tab: bg color, padding, margin, radius, shadow
-     └─ Media tab: image upload from PC / URL
-```
+Extend `app_role` enum to add `super_admin` (keep existing `admin`, `student`, `moderator`).
 
-- Selected element highlighted with outline; click any element inside the iframe to inspect.
-- Save → writes to Supabase; iframe hot-reloads content from DB.
+Update `has_role()` semantics with a helper:
+- `is_admin(uid)` → true if `admin` OR `super_admin`
+- `is_super_admin(uid)` → true only if `super_admin`
 
-## Data model (extends existing `site_content`)
+Rewrite RLS policies:
 
-বর্তমান `site_content` টেবিলে JSONB `content` কলাম আছে — সেটিকেই স্কিমা-ড্রিভেন থেকে **ফ্রি-ফর্ম block tree** এ আপগ্রেড করব:
+| Table | Student | Admin | Super Admin |
+|---|---|---|---|
+| profiles | read/update own | read all | full |
+| user_roles | read own | read all | full (only super_admin can insert/update/delete roles) |
+| courses | read published | full CRUD | full CRUD |
+| lessons | read published + enrolled (or free preview) | full CRUD | full CRUD |
+| enrollments | read own | read all, insert | full |
+| payments | read/insert own | read all, approve/reject | full |
+| lesson_progress | read/write own | read all | full |
+| reviews | read all, write own | moderate | full |
+| site_content | read | read | full CRUD |
 
-```json
-{
-  "blocks": [
-    { "id": "hero-1", "type": "hero", "props": { "title": "...", "bg": "#..." } },
-    { "id": "features-1", "type": "features-grid", "props": { "items": [...] } },
-    { "id": "cta-1", "type": "cta", "props": {...} }
-  ],
-  "theme": { "primary": "#0d9488", "font_body": "Hind Siliguri" }
-}
-```
+Assign `academy.jbit@gmail.com` as `super_admin`.
 
-- Backward compatible: পুরাতন schema-based পেজ (home/about/contact/privacy/terms/branding/footer) একটি `legacy` block হিসেবে রেন্ডার হবে; অ্যাডমিন চাইলে "Convert to blocks" চেপে block tree তে রূপান্তর করবে।
+## 2. Auth Context & Guards
 
-## Block library (initial set)
+Enhance `src/lib/auth-context.tsx`:
+- Expose `role: 'super_admin' | 'admin' | 'student' | null`, `isAdmin`, `isSuperAdmin`, `loading`
+- Fetch role from `user_roles` on session change
+- Auto-refresh handled by Supabase (already on); add graceful 401 handling via `onAuthStateChange`
+- Clean sign-out: cancel queries, clear cache, `signOut()`, replace-navigate to `/auth`
 
-Hero, Heading, Rich text, Image, Two-column, Features grid, Testimonials, CTA banner, Course-list embed, Spacer, Divider, HTML embed. প্রতিটি block-এর একটি Renderer কম্পোনেন্ট + Inspector schema থাকবে।
+Route guards:
+- Keep `_authenticated/route.tsx` (student+ gate)
+- Wrap `admin.tsx` with `useAdmin` → requires `admin` or `super_admin`
+- New `_authenticated/admin.settings.*` routes gated to `super_admin` only via a small `useSuperAdmin` hook
+- Site-settings + admin management links hidden for non-super-admins
 
-## Editor UX
+## 3. Server-side permission validation
 
-- **Element selection**: iframe এ postMessage bridge — hover → highlight, click → sends `{blockId, path}` to parent editor.
-- **Inline text edit**: text nodes contenteditable হয়ে সরাসরি টাইপ করা যাবে; blur → save.
-- **Image upload**: existing `course-thumbnails` bucket-এ `site/` folder-এ আপলোড।
-- **Add section**: sidebar "+" → block picker → inserts at cursor.
-- **Reorder**: drag handle on each section (dnd-kit — already installed)।
-- **Delete**: trash icon with confirm।
-- **Undo/Redo**: local history stack (session only, up to 50 steps)।
-- **Publish**: Draft vs Published — draft in `site_content.draft` JSONB, live in `content`. "Publish" button copies draft → content।
+Add `src/lib/permissions.ts` with predicates used both in UI (hide) and before Supabase mutations (early return with toast). Real enforcement still lives in RLS — this is defense-in-depth + UX.
 
-## Pages covered
+## 4. Error Pages
 
-সব পাবলিক রুট: `/`, `/about`, `/contact`, `/privacy`, `/terms`, `/courses`, `/courses/:slug`. Header/Footer branding আলাদা global block হিসেবে সব পেজে shared।
+New polished pages using existing teal/green design system:
+- `src/components/error-pages/{not-found,forbidden,server-error}.tsx`
+- Wire into `__root.tsx` `notFoundComponent` + router `defaultErrorComponent`
+- Add `/403` route + throw `redirect({ to: '/403' })` when a student hits admin URLs directly
 
-Course listing (`/courses`) ও details (`/courses/:slug`) পেজে course data ডাইনামিক থাকবে — অ্যাডমিন শুধু surrounding blocks (heading, intro, CTA) এডিট করতে পারবে; কোর্স কার্ডের styling wrapper block দিয়ে হবে।
+## 5. Performance
 
-## Security
+- Router already code-splits per route via TanStack file routing — verify all admin routes are under `_authenticated/admin.*` (already are)
+- Add `loading="lazy"` + `decoding="async"` to non-hero `<img>` tags in course cards, lesson list, footer/header logos
+- Extract shared course-card, lesson-list-item, admin table row into `src/components/shared/*`
 
-- `/admin/edit/*` `_authenticated` + admin role check (existing pattern)।
-- `site_content` RLS: read public, write admin — already correct।
-- Storage RLS: admin write, public read — already correct।
+## 6. Code cleanup
 
-## Files to create/edit
+- Consolidate duplicated Supabase fetch patterns (course by slug, enrollment check, lessons list) into `src/lib/queries/*.ts` hooks
+- Centralize types in `src/lib/types.ts` re-exporting from `supabase/types`
+- Remove legacy static-data fallbacks in `src/lib/courses.ts` if unused
 
-New:
-- `src/routes/_authenticated/admin.edit.$page.tsx` — editor shell (sidebar + iframe + inspector)
-- `src/components/editor/block-renderer.tsx` — renders block tree
-- `src/components/editor/blocks/*.tsx` — each block type
-- `src/components/editor/inspector.tsx` — right-panel property editor
-- `src/components/editor/block-picker.tsx` — add-block modal
-- `src/lib/page-blocks.ts` — block schemas, defaults, types
-- `src/lib/editor-bridge.ts` — parent↔iframe postMessage helpers
-- Supabase migration: add `draft JSONB`, `blocks JSONB` columns to `site_content`
+## 7. Session handling
 
-Edit:
-- `src/routes/index.tsx`, `about.tsx`, `contact.tsx`, `privacy.tsx`, `terms.tsx`, `courses.tsx` — render block tree if present, else fallback to current CMS/legacy render; detect `?edit=1` search param and enable edit overlay
-- `src/components/site-header.tsx`, `site-footer.tsx` — support block-based branding
-- `src/routes/_authenticated/admin.index.tsx` — add "Visual Editor" nav
-- `src/routes/_authenticated/admin.tsx` — sidebar link
+- On any Supabase error with code `PGRST301` / `401`, toast "সেশন শেষ হয়েছে" and redirect to `/auth`
+- Persist session (already default), auto refresh (already default) — verified in client init
 
-## Phased delivery
+## What stays the same
 
-Given scope, I'll build in one pass but scope the first version as:
+All existing UI, Bengali copy, payment flow, lesson player, CMS editor, and admin course/lesson management remain functional. Only guards, RLS, error surfaces, and shared helpers change.
 
-**v1 (this turn)**: Editor shell, iframe live preview, block tree data model, migration, 6 core blocks (hero, heading, rich-text, image, two-col, CTA), inspector with text/style/media tabs, add/delete/reorder, image upload, save + publish, applied to Home page as pilot.
+## Technical notes
 
-**v2 (follow-up)**: Extend to About/Contact/Privacy/Terms; add Features/Testimonials/Course-list blocks; header/footer visual editing; undo/redo history.
+- One migration for enum extension + policy rewrites + super_admin grant
+- No new dependencies
+- `src/lib/use-admin.ts` extended (not replaced) so existing imports keep working
+- Files touched: ~20 (auth-context, admin layout, __root, new error components, permissions lib, migration)
 
-I'll deliver v1 first, then you can test on Home and I'll roll it out to the rest.
-
-## Notes
-
-- বড় ফিচার — v1-ই ~10-12 files। Home পেজে টেস্ট করে confirm করলে বাকি পেজে expand করব।
-- Existing CMS editor (`/admin/content/*`) কাজ করতে থাকবে; visual editor আলাদা entry।
-- এটি টেমপ্লেট-ভিত্তিক block system, Webflow/Framer এর মত ফ্রি canvas নয় — mobile responsiveness ও ডিজাইন consistency ধরে রাখতে।
+Approve to proceed, or tell me what to change.
