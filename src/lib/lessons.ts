@@ -33,6 +33,25 @@ export function extractYouTubeId(url: string | null | undefined): string | null 
   const trimmed = url.trim();
   // Bare 11-char id
   if (/^[A-Za-z0-9_-]{11}$/.test(trimmed)) return trimmed;
+
+  try {
+    const parsed = new URL(trimmed);
+    const host = parsed.hostname.replace(/^www\./, "");
+    const v = parsed.searchParams.get("v");
+    if (v && /^[A-Za-z0-9_-]{11}$/.test(v)) return v;
+
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    if (host === "youtu.be" && parts[0] && /^[A-Za-z0-9_-]{11}$/.test(parts[0])) return parts[0];
+    const knownPathIndex = parts.findIndex((part) => ["embed", "shorts", "live", "v"].includes(part));
+    const candidate = knownPathIndex >= 0 ? parts[knownPathIndex + 1] : null;
+    if ((host.endsWith("youtube.com") || host.endsWith("youtube-nocookie.com")) && candidate) {
+      const cleanCandidate = candidate.split(/[?&#]/)[0];
+      if (/^[A-Za-z0-9_-]{11}$/.test(cleanCandidate)) return cleanCandidate;
+    }
+  } catch {
+    // Fall back to regex parsing below for pasted text/snippets.
+  }
+
   const patterns = [
     /[?&]v=([A-Za-z0-9_-]{11})/,
     /youtu\.be\/([A-Za-z0-9_-]{11})/,
@@ -51,7 +70,7 @@ export function extractYouTubeId(url: string | null | undefined): string | null 
 export function youtubeEmbedUrl(url: string | null | undefined): string | null {
   const id = extractYouTubeId(url);
   return id
-    ? `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&color=white`
+    ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
     : null;
 }
 
