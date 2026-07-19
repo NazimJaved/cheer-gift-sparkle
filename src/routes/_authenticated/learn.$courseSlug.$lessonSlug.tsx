@@ -11,7 +11,6 @@ import {
   PlayCircle,
   Sparkles,
   AlertTriangle,
-  ExternalLink,
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -451,6 +450,9 @@ function LessonVideoFrame({
         onLoad={() => setStatus("ready")}
         onError={() => setStatus("error")}
       />
+      {/* Masks over YouTube branding, title bar, and share/watch-on-YouTube controls */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b from-black to-transparent" />
+      <div className="pointer-events-none absolute right-0 bottom-0 z-10 h-10 w-28 bg-black" />
       <div className="absolute bottom-3 right-3 z-20 flex gap-2">
         {status === "error" && (
           <button
@@ -459,16 +461,6 @@ function LessonVideoFrame({
           >
             <RefreshCw className="h-3.5 w-3.5" /> আবার চেষ্টা
           </button>
-        )}
-        {rawUrl && (
-          <a
-            href={rawUrl}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-black/60 px-3 py-2 text-xs font-medium text-white shadow hover:bg-black/80"
-          >
-            <ExternalLink className="h-3.5 w-3.5" /> YouTube
-          </a>
         )}
       </div>
     </div>
@@ -489,7 +481,7 @@ function UnparseableVideo({ rawUrl }: { rawUrl: string | null }) {
   return (
     <VideoErrorState
       title="ভিডিও লিংক পড়া যায়নি"
-      message="YouTube ভিডিও লিংকটি সঠিক ফরম্যাটে নেই। অ্যাডমিনকে সঠিক YouTube URL যুক্ত করতে অনুরোধ করুন।"
+      message="ভিডিও লিংকটি সঠিক ফরম্যাটে নেই। অ্যাডমিনকে সঠিক লিংক যুক্ত করতে অনুরোধ করুন।"
       rawUrl={rawUrl}
     />
   );
@@ -514,11 +506,6 @@ function VideoErrorState({
         </div>
         <h3 className="mt-4 text-base font-semibold">{title}</h3>
         <p className="mt-1 text-sm text-white/70">{message}</p>
-        {rawUrl && (
-          <p className="mt-3 break-all rounded-md bg-white/5 px-3 py-2 text-[11px] text-white/50">
-            {rawUrl}
-          </p>
-        )}
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
           {onRetry && (
             <button
@@ -527,16 +514,6 @@ function VideoErrorState({
             >
               <RefreshCw className="h-3.5 w-3.5" /> আবার চেষ্টা করুন
             </button>
-          )}
-          {rawUrl && (
-            <a
-              href={rawUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-white/5 px-3 py-2 text-xs font-medium text-white hover:bg-white/10"
-            >
-              <ExternalLink className="h-3.5 w-3.5" /> YouTube-এ খুলুন
-            </a>
           )}
         </div>
       </div>
