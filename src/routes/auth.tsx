@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { SiteLayout } from "@/components/site-layout";
-import { Loader2 } from "lucide-react";
+import { GraduationCap, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
+  errorComponent: AuthPageError,
 });
 
 function AuthPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
   return (
-    <SiteLayout>
+    <AuthLayout>
       <div className="mx-auto flex max-w-md flex-col px-4 py-12">
         <div className="mb-6 grid grid-cols-2 rounded-lg border border-border p-1 text-sm font-medium">
           <button
@@ -29,7 +29,55 @@ function AuthPage() {
         </div>
         {mode === "login" ? <LoginForm /> : <RegisterForm onDone={() => setMode("login")} />}
       </div>
-    </SiteLayout>
+    </AuthLayout>
+  );
+}
+
+function AuthLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen flex-col bg-background font-bengali">
+      <header className="border-b border-border bg-background">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+          <Link to="/" className="flex items-center gap-2 font-bengali">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-teal text-teal-foreground">
+              <GraduationCap className="h-5 w-5" />
+            </span>
+            <span className="text-lg font-semibold tracking-tight">JB iT Academy</span>
+          </Link>
+          <Link to="/" className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+            হোম
+          </Link>
+        </div>
+      </header>
+      <main className="flex-1">{children}</main>
+      <footer className="border-t border-border bg-secondary/40">
+        <p className="mx-auto max-w-6xl px-4 py-4 text-center text-xs text-muted-foreground">
+          © {new Date().getFullYear()} JB iT Academy সর্বস্বত্ব সংরক্ষিত।
+        </p>
+      </footer>
+    </div>
+  );
+}
+
+function AuthPageError() {
+  return (
+    <AuthLayout>
+      <div className="mx-auto flex max-w-md flex-col items-center px-4 py-20 text-center">
+        <div className="mb-6 grid h-16 w-16 place-items-center rounded-full bg-teal/10 text-teal">
+          <GraduationCap className="h-8 w-8" />
+        </div>
+        <h1 className="text-2xl font-semibold">লগইন পেজ লোড করা যায়নি</h1>
+        <p className="mt-3 text-sm text-muted-foreground">দয়া করে আবার চেষ্টা করুন অথবা হোম পেজে ফিরে যান।</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <a href="/auth" className="rounded-md bg-teal px-4 py-2 text-sm font-medium text-teal-foreground">
+            আবার চেষ্টা করুন
+          </a>
+          <Link to="/" className="rounded-md border border-input px-4 py-2 text-sm font-medium">
+            হোমে ফিরে যান
+          </Link>
+        </div>
+      </div>
+    </AuthLayout>
   );
 }
 
