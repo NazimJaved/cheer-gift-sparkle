@@ -35,7 +35,7 @@ function CoursesPage() {
           ) : courses.length === 0 ? (
             <p className="text-center text-muted-foreground">এখনো কোনো কোর্স প্রকাশিত হয়নি।</p>
           ) : (
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mx-auto grid max-w-6xl justify-center gap-8 sm:grid-cols-2 lg:grid-cols-3 [&>*]:w-full [&>*]:max-w-sm">
               {courses.map((c) => (
                 <CourseCard key={c.id} c={c} />
               ))}
