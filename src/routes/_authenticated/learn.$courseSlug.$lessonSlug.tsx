@@ -438,7 +438,7 @@ function LessonVideoFrame({
   return (
     <div className="relative w-full bg-black" style={{ aspectRatio: "16 / 9" }}>
       {status === "loading" && (
-        <div className="absolute inset-0 z-10 grid place-items-center bg-black/60 text-white/80">
+        <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center bg-black/40 text-white/80">
           <div className="flex items-center gap-2 text-sm">
             <Loader2 className="h-4 w-4 animate-spin" /> ভিডিও লোড হচ্ছে...
           </div>
