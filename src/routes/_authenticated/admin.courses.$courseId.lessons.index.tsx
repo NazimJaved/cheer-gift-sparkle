@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import type { Lesson } from "@/lib/lessons";
+import type { Chapter, Lesson } from "@/lib/lessons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,6 +50,12 @@ function AdminLessonsPage() {
   const navigate = useNavigate();
   const [courseTitle, setCourseTitle] = useState<string>("");
   const [rows, setRows] = useState<Lesson[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [newChapterTitle, setNewChapterTitle] = useState("");
+  const [savingChapter, setSavingChapter] = useState(false);
+  const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
+  const [editingChapterTitle, setEditingChapterTitle] = useState("");
+  const [deleteChapterId, setDeleteChapterId] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -61,13 +67,21 @@ function AdminLessonsPage() {
 
   async function load() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("lessons")
-      .select("*")
-      .eq("course_id", courseId)
-      .order("lesson_order", { ascending: true });
+    const [{ data: lessonData, error }, { data: chapterData }] = await Promise.all([
+      supabase
+        .from("lessons")
+        .select("*")
+        .eq("course_id", courseId)
+        .order("lesson_order", { ascending: true }),
+      supabase
+        .from("course_chapters")
+        .select("id,course_id,title,chapter_order")
+        .eq("course_id", courseId)
+        .order("chapter_order", { ascending: true }),
+    ]);
     if (error) toast.error(error.message);
-    else setRows((data ?? []) as Lesson[]);
+    else setRows((lessonData ?? []) as Lesson[]);
+    setChapters((chapterData ?? []) as Chapter[]);
     setLoading(false);
   }
 
@@ -133,6 +147,70 @@ function AdminLessonsPage() {
 
   const deletingTitle = rows.find((r) => r.id === deleteId)?.title;
   const publishedCount = rows.filter((r) => r.is_published).length;
+  const deletingChapter = chapters.find((c) => c.id === deleteChapterId);
+
+  async function addChapter() {
+    const title = newChapterTitle.trim();
+    if (!title) return;
+    setSavingChapter(true);
+    const nextOrder = (chapters[chapters.length - 1]?.chapter_order ?? 0) + 1;
+    const { error } = await supabase
+      .from("course_chapters")
+      .insert({ course_id: courseId, title, chapter_order: nextOrder });
+    setSavingChapter(false);
+    if (error) return toast.error(error.message);
+    setNewChapterTitle("");
+    toast.success("চ্যাপ্টার যোগ হয়েছে");
+    load();
+  }
+
+  async function saveChapterEdit() {
+    if (!editingChapterId) return;
+    const title = editingChapterTitle.trim();
+    if (!title) return;
+    const { error } = await supabase
+      .from("course_chapters")
+      .update({ title })
+      .eq("id", editingChapterId);
+    if (error) return toast.error(error.message);
+    setEditingChapterId(null);
+    toast.success("চ্যাপ্টার আপডেট হয়েছে");
+    load();
+  }
+
+  async function moveChapter(id: string, dir: -1 | 1) {
+    const idx = chapters.findIndex((c) => c.id === id);
+    const swapIdx = idx + dir;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= chapters.length) return;
+    const a = chapters[idx];
+    const b = chapters[swapIdx];
+    const next = chapters.slice();
+    next[idx] = { ...b, chapter_order: a.chapter_order };
+    next[swapIdx] = { ...a, chapter_order: b.chapter_order };
+    setChapters(next);
+    await Promise.all([
+      supabase.from("course_chapters").update({ chapter_order: b.chapter_order }).eq("id", a.id),
+      supabase.from("course_chapters").update({ chapter_order: a.chapter_order }).eq("id", b.id),
+    ]);
+    load();
+  }
+
+  async function confirmDeleteChapter() {
+    if (!deleteChapterId) return;
+    const { error } = await supabase.from("course_chapters").delete().eq("id", deleteChapterId);
+    setDeleteChapterId(null);
+    if (error) return toast.error(error.message);
+    toast.success("চ্যাপ্টার মুছে ফেলা হয়েছে");
+    load();
+  }
+
+  const groups: { chapter: Chapter | null; lessons: Lesson[] }[] = [
+    ...chapters.map((c) => ({
+      chapter: c,
+      lessons: filtered.filter((l) => l.chapter_id === c.id),
+    })),
+    { chapter: null, lessons: filtered.filter((l) => !l.chapter_id) },
+  ];
 
   return (
     <div className="space-y-4">
@@ -176,6 +254,120 @@ function AdminLessonsPage() {
         )}
       </div>
 
+      <div className="rounded-lg border border-border bg-card p-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold">চ্যাপ্টার / সেকশন</h3>
+          <span className="text-xs text-muted-foreground">মোট {chapters.length}</span>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <input
+            value={newChapterTitle}
+            onChange={(e) => setNewChapterTitle(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addChapter())}
+            placeholder="নতুন চ্যাপ্টারের নাম"
+            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal"
+          />
+          <button
+            onClick={addChapter}
+            disabled={savingChapter || !newChapterTitle.trim()}
+            className="inline-flex items-center gap-1 rounded-md bg-teal px-3 py-2 text-sm font-medium text-teal-foreground hover:bg-teal/90 disabled:opacity-60"
+          >
+            <Plus className="h-4 w-4" /> যোগ
+          </button>
+        </div>
+        {chapters.length > 0 && (
+          <ul className="mt-3 divide-y divide-border rounded-md border border-border">
+            {chapters.map((c, i) => {
+              const count = rows.filter((r) => r.chapter_id === c.id).length;
+              const isEditing = editingChapterId === c.id;
+              return (
+                <li key={c.id} className="flex items-center gap-2 p-2">
+                  <span className="grid h-7 w-7 place-items-center rounded bg-teal/10 text-xs font-semibold text-teal">
+                    {i + 1}
+                  </span>
+                  {isEditing ? (
+                    <input
+                      autoFocus
+                      value={editingChapterTitle}
+                      onChange={(e) => setEditingChapterTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") saveChapterEdit();
+                        if (e.key === "Escape") setEditingChapterId(null);
+                      }}
+                      className="flex-1 rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal"
+                    />
+                  ) : (
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium">{c.title}</div>
+                      <div className="text-[11px] text-muted-foreground">{count} লেসন</div>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => moveChapter(c.id, -1)}
+                      disabled={i === 0}
+                      className="rounded p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30"
+                      title="উপরে"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveChapter(c.id, 1)}
+                      disabled={i === chapters.length - 1}
+                      className="rounded p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30"
+                      title="নিচে"
+                    >
+                      ↓
+                    </button>
+                    {isEditing ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={saveChapterEdit}
+                          className="rounded p-1.5 text-teal hover:bg-secondary"
+                          title="সংরক্ষণ"
+                        >
+                          <Save className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingChapterId(null)}
+                          className="rounded p-1.5 text-muted-foreground hover:bg-secondary"
+                        >
+                          ✕
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingChapterId(c.id);
+                          setEditingChapterTitle(c.title);
+                        }}
+                        className="rounded p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        title="সম্পাদনা"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setDeleteChapterId(c.id)}
+                      className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      title="মুছুন"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
       <div className="rounded-lg border border-border bg-card">
         {loading ? (
           <div className="p-10 text-center text-muted-foreground">
@@ -188,23 +380,35 @@ function AdminLessonsPage() {
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={filtered.map((r) => r.id)} strategy={verticalListSortingStrategy}>
-              <ul className="divide-y divide-border">
-                {filtered.map((r) => (
-                  <SortableRow
-                    key={r.id}
-                    lesson={r}
-                    disabled={!!q.trim()}
-                    onEdit={() =>
-                      navigate({
-                        to: "/admin/courses/$courseId/lessons/$lessonId/edit",
-                        params: { courseId, lessonId: r.id },
-                      })
-                    }
-                    onDelete={() => setDeleteId(r.id)}
-                    onTogglePublish={() => togglePublish(r)}
-                  />
-                ))}
-              </ul>
+              <div className="divide-y divide-border">
+                {groups.map((g) =>
+                  g.lessons.length === 0 ? null : (
+                    <div key={g.chapter?.id ?? "__none"}>
+                      <div className="bg-secondary/40 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {g.chapter ? g.chapter.title : "চ্যাপ্টার ছাড়া"}
+                        <span className="ml-2 font-normal normal-case">· {g.lessons.length} লেসন</span>
+                      </div>
+                      <ul className="divide-y divide-border">
+                        {g.lessons.map((r) => (
+                          <SortableRow
+                            key={r.id}
+                            lesson={r}
+                            disabled={!!q.trim()}
+                            onEdit={() =>
+                              navigate({
+                                to: "/admin/courses/$courseId/lessons/$lessonId/edit",
+                                params: { courseId, lessonId: r.id },
+                              })
+                            }
+                            onDelete={() => setDeleteId(r.id)}
+                            onTogglePublish={() => togglePublish(r)}
+                          />
+                        ))}
+                      </ul>
+                    </div>
+                  ),
+                )}
+              </div>
             </SortableContext>
           </DndContext>
         )}
@@ -222,6 +426,26 @@ function AdminLessonsPage() {
             <AlertDialogCancel>বাতিল</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              মুছুন
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!deleteChapterId} onOpenChange={(o) => !o && setDeleteChapterId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>চ্যাপ্টার মুছবেন?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{deletingChapter?.title}" মুছে ফেলা হবে। এই চ্যাপ্টারের লেসনগুলো "চ্যাপ্টার ছাড়া"-তে চলে যাবে।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>বাতিল</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteChapter}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               মুছুন
