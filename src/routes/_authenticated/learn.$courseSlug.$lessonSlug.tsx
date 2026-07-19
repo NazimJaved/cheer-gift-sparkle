@@ -401,3 +401,129 @@ function LockedPreview({ course }: { course: CourseRow }) {
     </div>
   );
 }
+
+function LessonVideoFrame({
+  embed,
+  rawUrl,
+  title,
+  lessonId,
+}: {
+  embed: string;
+  rawUrl: string | null;
+  title: string;
+  lessonId: string;
+}) {
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    setStatus("loading");
+    const t = window.setTimeout(() => {
+      setStatus((s) => (s === "loading" ? "error" : s));
+    }, 12000);
+    return () => window.clearTimeout(t);
+  }, [lessonId, attempt]);
+
+  if (status === "error") {
+    return (
+      <VideoErrorState
+        title="ভিডিও লোড করা যায়নি"
+        message="ইন্টারনেট সংযোগ অথবা ভিডিওর অ্যাক্সেস সেটিং-এ সমস্যা হতে পারে। নিচের অপশনগুলো চেষ্টা করুন।"
+        rawUrl={rawUrl}
+        onRetry={() => setAttempt((a) => a + 1)}
+      />
+    );
+  }
+
+  return (
+    <div className="relative w-full bg-black" style={{ aspectRatio: "16 / 9" }}>
+      {status === "loading" && (
+        <div className="absolute inset-0 z-10 grid place-items-center bg-black/60 text-white/80">
+          <div className="flex items-center gap-2 text-sm">
+            <Loader2 className="h-4 w-4 animate-spin" /> ভিডিও লোড হচ্ছে...
+          </div>
+        </div>
+      )}
+      <iframe
+        key={`${lessonId}-${attempt}`}
+        src={embed}
+        title={title}
+        className="absolute inset-0 h-full w-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
+        onLoad={() => setStatus("ready")}
+        onError={() => setStatus("error")}
+      />
+    </div>
+  );
+}
+
+function UnparseableVideo({ rawUrl }: { rawUrl: string | null }) {
+  if (!rawUrl) {
+    return (
+      <div className="grid aspect-video place-items-center bg-gradient-to-br from-slate-900 via-black to-slate-900 text-center text-white/70">
+        <div>
+          <PlayCircle className="mx-auto h-10 w-10 text-white/30" />
+          <p className="mt-3 text-sm">এই লেসনে এখনো ভিডিও যুক্ত হয়নি</p>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <VideoErrorState
+      title="ভিডিও লিংক পড়া যায়নি"
+      message="YouTube ভিডিও লিংকটি সঠিক ফরম্যাটে নেই। অ্যাডমিনকে সঠিক YouTube URL যুক্ত করতে অনুরোধ করুন।"
+      rawUrl={rawUrl}
+    />
+  );
+}
+
+function VideoErrorState({
+  title,
+  message,
+  rawUrl,
+  onRetry,
+}: {
+  title: string;
+  message: string;
+  rawUrl: string | null;
+  onRetry?: () => void;
+}) {
+  return (
+    <div className="grid aspect-video place-items-center bg-gradient-to-br from-slate-900 via-black to-slate-900 p-6 text-center text-white">
+      <div className="max-w-md">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-red-500/15 text-red-400 ring-1 ring-red-500/30">
+          <AlertTriangle className="h-6 w-6" />
+        </div>
+        <h3 className="mt-4 text-base font-semibold">{title}</h3>
+        <p className="mt-1 text-sm text-white/70">{message}</p>
+        {rawUrl && (
+          <p className="mt-3 break-all rounded-md bg-white/5 px-3 py-2 text-[11px] text-white/50">
+            {rawUrl}
+          </p>
+        )}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="inline-flex items-center gap-1.5 rounded-md bg-teal px-3 py-2 text-xs font-medium text-teal-foreground hover:bg-teal/90"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> আবার চেষ্টা করুন
+            </button>
+          )}
+          {rawUrl && (
+            <a
+              href={rawUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-white/5 px-3 py-2 text-xs font-medium text-white hover:bg-white/10"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> YouTube-এ খুলুন
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
