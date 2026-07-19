@@ -230,7 +230,7 @@ function LessonPlayerPage() {
                 </div>
                 {canView ? (
                   embed ? (
-                    <VideoFrame
+                    <LessonVideoFrame
                       embed={embed}
                       rawUrl={current.youtube_url}
                       title={current.title}
