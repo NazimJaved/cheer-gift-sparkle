@@ -70,7 +70,7 @@ export function extractYouTubeId(url: string | null | undefined): string | null 
 export function youtubeEmbedUrl(url: string | null | undefined): string | null {
   const id = extractYouTubeId(url);
   return id
-    ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
+    ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`
     : null;
 }
 
