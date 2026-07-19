@@ -496,6 +496,9 @@ function LessonPlayerPage() {
 }
 
 function LockedPreview({ course }: { course: CourseRow }) {
+  return _LockedPreview({ course });
+}
+function _LockedPreview({ course }: { course: CourseRow }) {
   const finalPrice = course.discount_price ?? course.price;
   return (
     <div className="grid aspect-video place-items-center bg-gradient-to-br from-teal/10 via-background to-green/10 p-8 text-center">
@@ -532,6 +535,7 @@ function LessonVideoFrame({
   lessonId: string;
   iframeRef?: React.MutableRefObject<HTMLIFrameElement | null>;
 }) {
+  void rawUrl;
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [attempt, setAttempt] = useState(0);
 
