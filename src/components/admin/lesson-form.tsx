@@ -3,7 +3,7 @@ import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { slugify, type Lesson, extractYouTubeId } from "@/lib/lessons";
+import { slugify, type Lesson, type Chapter, extractYouTubeId } from "@/lib/lessons";
 
 type FormState = {
   title: string;
@@ -13,6 +13,7 @@ type FormState = {
   duration: string;
   is_free_preview: boolean;
   is_published: boolean;
+  chapter_id: string | null;
 };
 
 function toForm(l?: Lesson): FormState {
@@ -24,6 +25,7 @@ function toForm(l?: Lesson): FormState {
     duration: l?.duration ?? "",
     is_free_preview: l?.is_free_preview ?? false,
     is_published: l?.is_published ?? false,
+    chapter_id: l?.chapter_id ?? null,
   };
 }
 
@@ -38,8 +40,20 @@ export function LessonForm({
   const [f, setF] = useState<FormState>(toForm(lesson));
   const [slugTouched, setSlugTouched] = useState(!!lesson);
   const [saving, setSaving] = useState(false);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
 
   useEffect(() => setF(toForm(lesson)), [lesson]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("course_chapters")
+        .select("id,course_id,title,chapter_order")
+        .eq("course_id", courseId)
+        .order("chapter_order", { ascending: true });
+      setChapters((data ?? []) as Chapter[]);
+    })();
+  }, [courseId]);
 
   function set<K extends keyof FormState>(k: K, v: FormState[K]) {
     setF((prev) => ({ ...prev, [k]: v }));
@@ -63,6 +77,7 @@ export function LessonForm({
       duration: f.duration.trim() || null,
       is_free_preview: f.is_free_preview,
       is_published: f.is_published,
+      chapter_id: f.chapter_id,
     };
 
     if (lesson) {
