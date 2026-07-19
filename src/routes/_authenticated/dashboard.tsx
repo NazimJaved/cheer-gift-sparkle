@@ -65,6 +65,12 @@ function DashboardPage() {
           >
             কোর্স ব্রাউজ করুন
           </Link>
+          <Link
+            to="/payments"
+            className="ml-3 inline-flex items-center rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-secondary"
+          >
+            পেমেন্ট ইতিহাস
+          </Link>
         </div>
       </div>
     </SiteLayout>

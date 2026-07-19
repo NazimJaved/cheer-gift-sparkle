@@ -68,8 +68,12 @@ function CourseDetail() {
                 <div className="text-2xl font-bold text-green">{formatPrice(course.price, course.discount_price)}</div>
                 <p className="mt-1 text-xs text-muted-foreground">এনরোলমেন্ট অ্যাডমিন-অনুমোদিত</p>
               </div>
-              <Link to="/contact" className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-teal px-4 py-2.5 text-sm font-medium text-teal-foreground hover:bg-teal/90">
-                অ্যাক্সেসের জন্য যোগাযোগ করুন
+              <Link
+                to="/courses/$slug/buy"
+                params={{ slug: course.slug }}
+                className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-teal px-4 py-2.5 text-sm font-medium text-teal-foreground hover:bg-teal/90"
+              >
+                কোর্স কিনুন
               </Link>
             </aside>
           </div>
