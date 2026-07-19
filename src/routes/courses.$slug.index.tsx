@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock, PlayCircle, Award, CheckCircle2, User, Globe, ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
 import { SiteLayout } from "@/components/site-layout";
 import { useCourseBySlug, useSignedCourseThumb, formatPrice } from "@/lib/db-courses";
+import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/courses/$slug/")({
   component: CourseDetail,
@@ -11,6 +14,22 @@ function CourseDetail() {
   const { slug } = Route.useParams();
   const { course, lessons } = useCourseBySlug(slug);
   const thumb = useSignedCourseThumb(course?.thumbnail ?? null);
+  const { user } = useAuth();
+  const [enrolled, setEnrolled] = useState(false);
+
+  useEffect(() => {
+    if (!user || !course?.id) {
+      setEnrolled(false);
+      return;
+    }
+    supabase
+      .from("enrollments")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("course_id", course.id)
+      .maybeSingle()
+      .then(({ data }) => setEnrolled(!!data));
+  }, [user, course?.id]);
 
   if (course === undefined) {
     return (
@@ -68,13 +87,23 @@ function CourseDetail() {
                 <div className="text-2xl font-bold text-green">{formatPrice(course.price, course.discount_price)}</div>
                 <p className="mt-1 text-xs text-muted-foreground">এনরোলমেন্ট অ্যাডমিন-অনুমোদিত</p>
               </div>
-              <Link
-                to="/courses/$slug/buy"
-                params={{ slug: course.slug }}
-                className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-teal px-4 py-2.5 text-sm font-medium text-teal-foreground hover:bg-teal/90"
-              >
-                কোর্স কিনুন
-              </Link>
+              {enrolled ? (
+                <Link
+                  to="/learn/$courseSlug"
+                  params={{ courseSlug: course.slug }}
+                  className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-green px-4 py-2.5 text-sm font-medium text-white hover:bg-green/90"
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" /> কোর্স শুরু করুন
+                </Link>
+              ) : (
+                <Link
+                  to="/courses/$slug/buy"
+                  params={{ slug: course.slug }}
+                  className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-teal px-4 py-2.5 text-sm font-medium text-teal-foreground hover:bg-teal/90"
+                >
+                  কোর্স কিনুন
+                </Link>
+              )}
             </aside>
           </div>
         </div>
