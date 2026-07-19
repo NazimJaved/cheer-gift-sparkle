@@ -418,29 +418,25 @@ function LessonVideoFrame({
 
   useEffect(() => {
     setStatus("loading");
-    const t = window.setTimeout(() => {
-      setStatus((s) => (s === "loading" ? "error" : s));
-    }, 12000);
-    return () => window.clearTimeout(t);
   }, [lessonId, attempt]);
-
-  if (status === "error") {
-    return (
-      <VideoErrorState
-        title="ভিডিও লোড করা যায়নি"
-        message="ইন্টারনেট সংযোগ অথবা ভিডিওর অ্যাক্সেস সেটিং-এ সমস্যা হতে পারে। নিচের অপশনগুলো চেষ্টা করুন।"
-        rawUrl={rawUrl}
-        onRetry={() => setAttempt((a) => a + 1)}
-      />
-    );
-  }
 
   return (
     <div className="relative w-full bg-black" style={{ aspectRatio: "16 / 9" }}>
       {status === "loading" && (
-        <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center bg-black/40 text-white/80">
+        <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center bg-black/20 text-white/80">
           <div className="flex items-center gap-2 text-sm">
             <Loader2 className="h-4 w-4 animate-spin" /> ভিডিও লোড হচ্ছে...
+          </div>
+        </div>
+      )}
+      {status === "error" && (
+        <div className="pointer-events-none absolute inset-x-4 top-4 z-20 rounded-lg border border-red-400/30 bg-black/80 px-4 py-3 text-sm text-white shadow-xl">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-300" />
+            <div>
+              <p className="font-medium">ভিডিও লোড হতে সমস্যা হচ্ছে</p>
+              <p className="mt-0.5 text-xs text-white/70">প্লেয়ারটি নিচে রাখা হয়েছে—প্লে না হলে YouTube-এ খুলুন।</p>
+            </div>
           </div>
         </div>
       )}
@@ -449,12 +445,32 @@ function LessonVideoFrame({
         src={embed}
         title={title}
         className="absolute inset-0 h-full w-full"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         referrerPolicy="strict-origin-when-cross-origin"
         allowFullScreen
         onLoad={() => setStatus("ready")}
         onError={() => setStatus("error")}
       />
+      <div className="absolute bottom-3 right-3 z-20 flex gap-2">
+        {status === "error" && (
+          <button
+            onClick={() => setAttempt((a) => a + 1)}
+            className="inline-flex items-center gap-1.5 rounded-md bg-teal px-3 py-2 text-xs font-medium text-teal-foreground shadow hover:bg-teal/90"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> আবার চেষ্টা
+          </button>
+        )}
+        {rawUrl && (
+          <a
+            href={rawUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-black/60 px-3 py-2 text-xs font-medium text-white shadow hover:bg-black/80"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> YouTube
+          </a>
+        )}
+      </div>
     </div>
   );
 }
