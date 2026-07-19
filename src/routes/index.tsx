@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { BookOpen, Award, Users, PlayCircle, CheckCircle2, Sparkles } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
-import { courses } from "@/lib/courses";
 import { useSiteContent, useSignedImage } from "@/lib/site-content";
+import { usePublishedCourses, useSignedCourseThumb } from "@/lib/db-courses";
 import { usePageBlocks } from "@/lib/page-blocks";
 import { BlockRenderer } from "@/components/editor/block-renderer";
 
@@ -12,9 +12,11 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const featured = courses[0];
+  const dbCourses = usePublishedCourses();
+  const featured = dbCourses?.[0] ?? null;
   const c = useSiteContent("home");
   const heroImg = useSignedImage(c.hero_image);
+  const featuredThumb = useSignedCourseThumb(featured?.thumbnail ?? null);
   const blocks = usePageBlocks("home");
   if (blocks && blocks.length > 0) {
     return (
@@ -60,25 +62,37 @@ function Index() {
             </div>
             <div className="relative">
               <div className="rounded-2xl border border-border bg-card p-6 shadow-xl">
-                {heroImg ? (
-                  <img src={heroImg} alt={featured.title} className="aspect-video w-full rounded-lg object-cover" />
+                {(() => {
+                  const img = featuredThumb ?? heroImg;
+                  return img ? (
+                    <img src={img} alt={featured?.title ?? "featured"} className="aspect-video w-full rounded-lg object-cover" />
+                  ) : (
+                    <div className="flex aspect-video items-center justify-center rounded-lg bg-gradient-to-br from-teal/20 to-green/30">
+                      <PlayCircle className="h-16 w-16 text-teal" />
+                    </div>
+                  );
+                })()}
+                {featured ? (
+                  <>
+                    <h3 className="mt-4 text-lg font-semibold">{featured.title}</h3>
+                    {featured.short_description ? (
+                      <p className="mt-1 text-sm text-muted-foreground">{featured.short_description}</p>
+                    ) : null}
+                    <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{featured.total_lessons ?? 0} লেসন</span>
+                      {featured.duration ? <><span>•</span><span>{featured.duration}</span></> : null}
+                      {featured.language ? <><span>•</span><span>{featured.language}</span></> : null}
+                    </div>
+                    <Link to="/courses/$slug" params={{ slug: featured.slug }} className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-green px-4 py-2 text-sm font-medium text-green-foreground hover:bg-green/90">
+                      বিস্তারিত দেখুন
+                    </Link>
+                  </>
                 ) : (
-                  <div className="flex aspect-video items-center justify-center rounded-lg bg-gradient-to-br from-teal/20 to-green/30">
-                    <PlayCircle className="h-16 w-16 text-teal" />
-                  </div>
+                  <>
+                    <h3 className="mt-4 text-lg font-semibold">শীঘ্রই আসছে</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">প্রথম কোর্স শীঘ্রই প্রকাশিত হবে।</p>
+                  </>
                 )}
-                <h3 className="mt-4 text-lg font-semibold">{featured.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{featured.subtitle}</p>
-                <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{featured.lessons} লেসন</span>
-                  <span>•</span>
-                  <span>{featured.duration}</span>
-                  <span>•</span>
-                  <span>{featured.language}</span>
-                </div>
-                <Link to="/courses/$slug" params={{ slug: featured.slug }} className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-green px-4 py-2 text-sm font-medium text-green-foreground hover:bg-green/90">
-                  বিস্তারিত দেখুন
-                </Link>
               </div>
             </div>
           </div>

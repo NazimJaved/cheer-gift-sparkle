@@ -19,6 +19,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CoursesSlugRouteImport } from './routes/courses.$slug'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
@@ -82,6 +83,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesSlugRoute = CoursesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => CoursesRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
@@ -170,13 +176,14 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/courses': typeof CoursesRoute
+  '/courses': typeof CoursesRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/courses/$slug': typeof CoursesSlugRoute
   '/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
   '/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRouteWithChildren
@@ -195,12 +202,13 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/courses': typeof CoursesRoute
+  '/courses': typeof CoursesRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/courses/$slug': typeof CoursesSlugRoute
   '/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
   '/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRouteWithChildren
@@ -221,13 +229,14 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/courses': typeof CoursesRoute
+  '/courses': typeof CoursesRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/courses/$slug': typeof CoursesSlugRoute
   '/_authenticated/admin/content': typeof AuthenticatedAdminContentRouteWithChildren
   '/_authenticated/admin/courses': typeof AuthenticatedAdminCoursesRouteWithChildren
   '/_authenticated/learn/$courseSlug': typeof AuthenticatedLearnCourseSlugRouteWithChildren
@@ -255,6 +264,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/dashboard'
+    | '/courses/$slug'
     | '/admin/content'
     | '/admin/courses'
     | '/learn/$courseSlug'
@@ -279,6 +289,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/dashboard'
+    | '/courses/$slug'
     | '/admin/content'
     | '/admin/courses'
     | '/learn/$courseSlug'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
+    | '/courses/$slug'
     | '/_authenticated/admin/content'
     | '/_authenticated/admin/courses'
     | '/_authenticated/learn/$courseSlug'
@@ -325,7 +337,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
-  CoursesRoute: typeof CoursesRoute
+  CoursesRoute: typeof CoursesRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -403,6 +415,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/courses/$slug': {
+      id: '/courses/$slug'
+      path: '/$slug'
+      fullPath: '/courses/$slug'
+      preLoaderRoute: typeof CoursesSlugRouteImport
+      parentRoute: typeof CoursesRoute
     }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
@@ -604,13 +623,24 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface CoursesRouteChildren {
+  CoursesSlugRoute: typeof CoursesSlugRoute
+}
+
+const CoursesRouteChildren: CoursesRouteChildren = {
+  CoursesSlugRoute: CoursesSlugRoute,
+}
+
+const CoursesRouteWithChildren =
+  CoursesRoute._addFileChildren(CoursesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
-  CoursesRoute: CoursesRoute,
+  CoursesRoute: CoursesRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
