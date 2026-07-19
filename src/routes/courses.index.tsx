@@ -35,9 +35,11 @@ function CoursesPage() {
           ) : courses.length === 0 ? (
             <p className="text-center text-muted-foreground">এখনো কোনো কোর্স প্রকাশিত হয়নি।</p>
           ) : (
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-8">
               {courses.map((c) => (
-                <CourseCard key={c.id} c={c} />
+                <div key={c.id} className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] max-w-sm">
+                  <CourseCard c={c} />
+                </div>
               ))}
             </div>
           )}
@@ -57,7 +59,7 @@ function CourseCard({ c }: { c: DbCourse }) {
     <Link
       to="/courses/$slug"
       params={{ slug: c.slug }}
-      className="group flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-2xl"
+      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-2xl"
     >
       <div className="relative flex aspect-video items-center justify-center overflow-hidden bg-gradient-to-br from-teal/20 to-green/30">
         {thumb ? (
