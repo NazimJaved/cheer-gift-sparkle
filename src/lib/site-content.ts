@@ -17,11 +17,11 @@ export interface PageSchema {
 
 export const SITE_CONTENT_DEFAULTS: Record<string, Record<string, string>> = {
   branding: {
-    brand_name: "আমিনশিপ একাডেমি",
+    brand_name: "JB iT Academy",
     logo_image: "",
   },
   footer: {
-    brand_name: "আমিনশিপ একাডেমি",
+    brand_name: "JB iT Academy",
     logo_image: "",
     description:
       "বাংলাদেশি শিক্ষার্থীদের জন্য বাংলা ভাষার আধুনিক অনলাইন কোর্স প্ল্যাটফর্ম।",
@@ -32,7 +32,7 @@ export const SITE_CONTENT_DEFAULTS: Record<string, Record<string, string>> = {
     legal_heading: "আইনি",
     legal_1_label: "গোপনীয়তা নীতি",
     legal_2_label: "শর্তাবলী",
-    copyright: "© {year} আমিনশিপ একাডেমি। সর্বস্বত্ব সংরক্ষিত।",
+    copyright: "© {year} JB iT Academy। সর্বস্বত্ব সংরক্ষিত।",
   },
   home: {
     hero_badge: "নতুন কোর্স উন্মোচিত",
