@@ -46,14 +46,13 @@ const PAGE_SIZE = 10;
 
 function AdminCoursesPage() {
   const matches = useMatches();
-  const hasChildRoute = matches.some(
-    (match) =>
-      match.routeId === "/_authenticated/admin/courses/new" ||
-      match.routeId === "/_authenticated/admin/courses/$id/edit" ||
-      match.routeId === "/_authenticated/admin/courses/$courseId/lessons" ||
-      match.routeId === "/_authenticated/admin/courses/$courseId/lessons/new" ||
-      match.routeId === "/_authenticated/admin/courses/$courseId/lessons/$lessonId/edit",
-  );
+  const hasChildRoute = matches.some((match) => {
+    const id = match.routeId;
+    return (
+      id !== "/_authenticated/admin/courses" &&
+      id.startsWith("/_authenticated/admin/courses/")
+    );
+  });
 
   if (hasChildRoute) return <Outlet />;
 
