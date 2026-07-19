@@ -219,11 +219,6 @@ function LearnCourseIndex() {
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                       allowFullScreen
                     />
-                    {/* Cover YouTube logo (bottom-right) and title bar (top) */}
-                    <div className="pointer-events-none absolute right-0 bottom-0 h-10 w-28 bg-black" />
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-black to-transparent" />
-                    {/* Cover share/watch-on-YouTube buttons in top-right */}
-                    <div className="pointer-events-none absolute right-0 top-0 h-12 w-40 bg-black" />
                   </>
                 ) : (
                   <div className="grid h-full w-full place-items-center text-center text-sm text-white/70">
