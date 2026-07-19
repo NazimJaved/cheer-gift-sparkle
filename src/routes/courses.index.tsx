@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, PlayCircle, Award } from "lucide-react";
+import { Clock, PlayCircle, Award, BookOpen } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
-import { usePublishedCourses, useSignedCourseThumb, formatPrice, type DbCourse } from "@/lib/db-courses";
+import { usePublishedCourses, useSignedCourseThumb, type DbCourse } from "@/lib/db-courses";
 
 export const Route = createFileRoute("/courses/")({
   head: () => ({
@@ -19,24 +19,29 @@ function CoursesPage() {
   const courses = usePublishedCourses();
   return (
     <SiteLayout>
-      <section className="mx-auto max-w-6xl px-4 py-12 md:py-16">
-        <div className="mb-10 max-w-2xl">
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">আমাদের কোর্সসমূহ</h1>
-          <p className="mt-3 text-muted-foreground">
-            আপনার আগ্রহের কোর্স বেছে নিন এবং আজই শেখা শুরু করুন। সব কোর্স বাংলা ভাষায় প্রস্তুতকৃত।
-          </p>
+      <section className="bg-slate-50/50">
+        <div className="mx-auto max-w-7xl px-4 py-16 md:py-20">
+          <div className="mb-14 text-center">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-5xl">
+              আমাদের <span className="text-teal">কোর্সসমূহ</span>
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+              আপনার আগ্রহের কোর্স বেছে নিন এবং আজই শেখা শুরু করুন। সব কোর্স বাংলা ভাষায় প্রস্তুতকৃত।
+            </p>
+            <div className="mx-auto mt-6 h-1.5 w-20 rounded-full bg-teal" />
+          </div>
+          {courses === null ? (
+            <p className="text-center text-muted-foreground">লোড হচ্ছে...</p>
+          ) : courses.length === 0 ? (
+            <p className="text-center text-muted-foreground">এখনো কোনো কোর্স প্রকাশিত হয়নি।</p>
+          ) : (
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {courses.map((c) => (
+                <CourseCard key={c.id} c={c} />
+              ))}
+            </div>
+          )}
         </div>
-        {courses === null ? (
-          <p className="text-muted-foreground">লোড হচ্ছে...</p>
-        ) : courses.length === 0 ? (
-          <p className="text-muted-foreground">এখনো কোনো কোর্স প্রকাশিত হয়নি।</p>
-        ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((c) => (
-            <CourseCard key={c.id} c={c} />
-          ))}
-        </div>
-        )}
       </section>
     </SiteLayout>
   );
@@ -44,37 +49,69 @@ function CoursesPage() {
 
 function CourseCard({ c }: { c: DbCourse }) {
   const thumb = useSignedCourseThumb(c.thumbnail);
+  const hasDiscount =
+    c.price != null && c.discount_price != null && c.discount_price > 0 && c.discount_price < c.price;
+  const displayPrice = hasDiscount ? c.discount_price! : c.price;
+  const isFree = c.price == null || c.price === 0;
   return (
     <Link
       to="/courses/$slug"
       params={{ slug: c.slug }}
-      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition hover:-translate-y-0.5 hover:shadow-lg"
+      className="group flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-2xl"
     >
       <div className="relative flex aspect-video items-center justify-center overflow-hidden bg-gradient-to-br from-teal/20 to-green/30">
         {thumb ? (
-          <img src={thumb} alt={c.title} className="h-full w-full object-cover" />
+          <img
+            src={thumb}
+            alt={c.title}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
         ) : (
           <PlayCircle className="h-14 w-14 text-teal transition group-hover:scale-110" />
         )}
         {c.level ? (
-          <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2 py-1 text-[11px] font-medium text-teal">
+          <span className="absolute left-4 top-4 rounded-full bg-teal px-4 py-1.5 text-sm font-medium text-white shadow-lg">
             {c.level}
           </span>
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col p-5">
-        <h3 className="text-lg font-semibold">{c.title}</h3>
+      <div className="flex flex-1 flex-col p-6">
+        <h3 className="text-xl font-bold text-slate-800 transition-colors group-hover:text-teal">
+          {c.title}
+        </h3>
         {c.short_description ? (
-          <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{c.short_description}</p>
+          <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+            {c.short_description}
+          </p>
         ) : null}
-        <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
-          {c.duration ? <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {c.duration}</span> : null}
-          <span className="inline-flex items-center gap-1"><PlayCircle className="h-3.5 w-3.5" /> {c.total_lessons ?? 0} লেসন</span>
-          <span className="inline-flex items-center gap-1"><Award className="h-3.5 w-3.5" /> সার্টিফিকেট</span>
+        <div className="mt-6 grid grid-cols-2 gap-y-3 border-t border-slate-100 pt-6 text-sm text-slate-600">
+          {c.duration ? (
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-teal" />
+              {c.duration}
+            </div>
+          ) : null}
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-teal" />
+            {c.total_lessons ?? 0}+ লেসন
+          </div>
+          <div className="col-span-2 flex items-center gap-2">
+            <Award className="h-4 w-4 text-green" />
+            কোর্স শেষে সার্টিফিকেট
+          </div>
         </div>
-        <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-          <span className="text-sm font-semibold text-green">{formatPrice(c.price, c.discount_price)}</span>
-          <span className="text-sm font-medium text-teal group-hover:underline">বিস্তারিত →</span>
+        <div className="mt-auto flex items-center justify-between pt-8">
+          <div className="flex flex-col">
+            {hasDiscount ? (
+              <span className="text-xs font-medium text-slate-400 line-through">৳ {c.price}</span>
+            ) : null}
+            <span className="text-2xl font-bold text-teal">
+              {isFree ? "ফ্রি" : `৳ ${displayPrice}`}
+            </span>
+          </div>
+          <span className="rounded-xl bg-teal px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all group-hover:bg-teal/90 group-hover:shadow-lg">
+            বিস্তারিত
+          </span>
         </div>
       </div>
     </Link>
