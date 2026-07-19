@@ -3,7 +3,7 @@ import { Clock, PlayCircle, Award } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
 import { usePublishedCourses, useSignedCourseThumb, formatPrice, type DbCourse } from "@/lib/db-courses";
 
-export const Route = createFileRoute("/courses")({
+export const Route = createFileRoute("/courses/")({
   head: () => ({
     meta: [
       { title: "কোর্সসমূহ — আমিনশিপ একাডেমি" },
