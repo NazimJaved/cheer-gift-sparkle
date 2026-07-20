@@ -1,30 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Camera, Loader2, Lock, Save, Trophy, Flame, BookOpen, CheckCircle2 } from "lucide-react";
+import { Loader2, Lock, Save, Trophy, Flame, BookOpen, CheckCircle2, Check, Shuffle } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { getSignedAvatarUrl, uploadAvatar } from "@/lib/avatar";
 import { useAchievements, useLearningStreak } from "@/lib/db-achievements";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
 });
 
+const AVATAR_STYLES = ["avataaars", "adventurer", "big-smile", "bottts", "fun-emoji", "lorelei", "micah", "notionists", "personas", "thumbs"] as const;
+function avatarUrlFor(seed: string, style: string) {
+  return `https://api.dicebear.com/9.x/${style}/svg?seed=${encodeURIComponent(seed)}`;
+}
+
 function ProfilePage() {
   const { user } = useAuth();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [savingAvatar, setSavingAvatar] = useState(false);
 
   const [stats, setStats] = useState({
     enrolled: 0,
@@ -45,8 +48,7 @@ function ProfilePage() {
         .maybeSingle();
       setFullName(data?.full_name ?? "");
       setPhone(data?.phone ?? "");
-      setAvatarPath(data?.avatar_url ?? null);
-      if (data?.avatar_url) setAvatarUrl(await getSignedAvatarUrl(data.avatar_url));
+      setAvatarUrl(data?.avatar_url ?? null);
 
       const [{ data: en }, { data: prog }, { data: ach }] = await Promise.all([
         supabase.from("enrollments").select("course_id").eq("user_id", user.id),
@@ -90,22 +92,15 @@ function ProfilePage() {
     toast.success("প্রোফাইল আপডেট হয়েছে");
   }
 
-  async function onAvatarFile(f: File) {
+  async function selectAvatar(url: string) {
     if (!user) return;
-    if (!f.type.startsWith("image/")) return toast.error("ইমেজ ফাইল দিন");
-    if (f.size > 5 * 1024 * 1024) return toast.error("সর্বোচ্চ ৫ MB");
-    setUploadingAvatar(true);
-    try {
-      const path = await uploadAvatar(user.id, f);
-      await supabase.from("profiles").update({ avatar_url: path }).eq("id", user.id);
-      setAvatarPath(path);
-      setAvatarUrl(await getSignedAvatarUrl(path));
-      toast.success("প্রোফাইল ছবি আপডেট হয়েছে");
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setUploadingAvatar(false);
-    }
+    setSavingAvatar(true);
+    const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+    setSavingAvatar(false);
+    if (error) return toast.error(error.message);
+    setAvatarUrl(url);
+    setPickerOpen(false);
+    toast.success("অ্যাভাটার আপডেট হয়েছে");
   }
 
   async function changePassword() {
@@ -148,31 +143,53 @@ function ProfilePage() {
                 (fullName || user?.email || "?")[0].toUpperCase()
               )}
             </div>
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="absolute -bottom-1 -right-1 grid h-8 w-8 place-items-center rounded-full bg-teal text-teal-foreground shadow"
-              aria-label="upload avatar"
-            >
-              {uploadingAvatar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) onAvatarFile(f);
-                e.currentTarget.value = "";
-              }}
-            />
           </div>
-          <div>
+          <div className="flex-1">
             <p className="font-semibold">{fullName || user?.email}</p>
             <p className="text-sm text-muted-foreground">{user?.email}</p>
+            <button
+              type="button"
+              onClick={() => setPickerOpen((v) => !v)}
+              className="mt-2 inline-flex items-center gap-2 rounded-md border border-input px-3 py-1.5 text-xs font-medium hover:bg-secondary"
+            >
+              <Shuffle className="h-3.5 w-3.5" /> অ্যাভাটার বাছাই করুন
+            </button>
           </div>
         </div>
+
+        {pickerOpen && (
+          <div className="mt-4 rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold">একটি অ্যাভাটার নির্বাচন করুন</h3>
+              {savingAvatar && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            </div>
+            <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 md:grid-cols-8">
+              {AVATAR_STYLES.flatMap((style) =>
+                [user?.id ?? "u", user?.email ?? "e", fullName || "n", style, `${style}-2`, `${style}-3`].map((seed) => {
+                  const url = avatarUrlFor(seed, style);
+                  const selected = avatarUrl === url;
+                  return (
+                    <button
+                      key={url}
+                      type="button"
+                      onClick={() => selectAvatar(url)}
+                      className={`relative aspect-square overflow-hidden rounded-full border-2 bg-teal/5 transition ${
+                        selected ? "border-teal ring-2 ring-teal/40" : "border-transparent hover:border-teal/50"
+                      }`}
+                    >
+                      <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                      {selected && (
+                        <span className="absolute bottom-0 right-0 grid h-5 w-5 place-items-center rounded-full bg-teal text-teal-foreground">
+                          <Check className="h-3 w-3" />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Learning stats */}
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
