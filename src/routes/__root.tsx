@@ -33,12 +33,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ডিজিটাল আমিনশিপ একাডেমি — বাংলাদেশি শিক্ষার্থীদের জন্য অনলাইন কোর্স" },
+      { title: "JB iT একাডেমি — বাংলাদেশি শিক্ষার্থীদের জন্য অনলাইন কোর্স" },
       { name: "description", content: "বাংলা ভাষায় আধুনিক অনলাইন কোর্স। ডিজিটাল আমিনশিপ শিখুন হাতে-কলমে, নিজের গতিতে।" },
-      { property: "og:title", content: "ডিজিটাল আমিনশিপ একাডেমি" },
-      { property: "og:description", content: "বাংলাদেশি শিক্ষার্থীদের জন্য বাংলা ভাষার অনলাইন লার্নিং প্ল্যাটফর্ম।" },
+      { property: "og:title", content: "JB iT একাডেমি — বাংলাদেশি শিক্ষার্থীদের জন্য অনলাইন কোর্স" },
+      { property: "og:description", content: "বাংলা ভাষায় আধুনিক অনলাইন কোর্স। ডিজিটাল আমিনশিপ শিখুন হাতে-কলমে, নিজের গতিতে।" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "JB iT একাডেমি — বাংলাদেশি শিক্ষার্থীদের জন্য অনলাইন কোর্স" },
+      { name: "twitter:description", content: "বাংলা ভাষায় আধুনিক অনলাইন কোর্স। ডিজিটাল আমিনশিপ শিখুন হাতে-কলমে, নিজের গতিতে।" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0a54b69b-7995-4290-b607-a4728312c506/id-preview-3df21336--04826026-f717-452b-a8cc-8565906bfe21.lovable.app-1784528234630.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0a54b69b-7995-4290-b607-a4728312c506/id-preview-3df21336--04826026-f717-452b-a8cc-8565906bfe21.lovable.app-1784528234630.png" },
     ],
     links: [
       {
