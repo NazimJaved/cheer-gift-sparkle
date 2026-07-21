@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { Menu, X, GraduationCap, Bell } from "lucide-react";
+import { Menu, X, GraduationCap, Bell, Sun, Moon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/lib/use-admin";
 import { useSiteContent, useSignedImage } from "@/lib/site-content";
 import { useNotifications } from "@/lib/db-notifications";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const nav = [
   { to: "/", label: "হোম" },
@@ -62,6 +63,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           {loading ? null : user ? (
             <>
               {isAdmin ? (
