@@ -6,7 +6,6 @@ import { useCourseBySlug, useSignedCourseThumb, formatPrice } from "@/lib/db-cou
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
-import { useEffect as useEffectView } from "react";
 
 export const Route = createFileRoute("/courses/$slug/")({
   component: CourseDetail,
@@ -19,7 +18,7 @@ function CourseDetail() {
   const { user } = useAuth();
   const [enrolled, setEnrolled] = useState(false);
 
-  useEffectView(() => {
+  useEffect(() => {
     if (!course?.id) return;
     trackEvent("course_view", {
       course_id: course.id,
