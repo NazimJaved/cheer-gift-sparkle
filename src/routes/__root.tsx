@@ -14,8 +14,17 @@ import { AuthProvider } from "../lib/auth-context";
 import { supabase } from "../integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { NotFoundPage, ServerErrorPage } from "@/components/error-pages";
+import { GA_MEASUREMENT_ID, pageview } from "@/lib/analytics";
+
+const GA_ENABLED = import.meta.env.PROD;
 
 function NotFoundComponent() {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    import("@/lib/analytics").then(({ trackEvent }) => {
+      trackEvent("page_not_found", { page_path: window.location.pathname });
+    });
+  }, []);
   return <NotFoundPage />;
 }
 
@@ -57,6 +66,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap",
       },
     ],
+    scripts: GA_ENABLED
+      ? [
+          {
+            src: `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`,
+            async: true,
+          },
+          {
+            children: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config','${GA_MEASUREMENT_ID}',{send_page_view:false});`,
+          },
+        ]
+      : [],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -90,6 +110,16 @@ function RootComponent() {
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
+
+  useEffect(() => {
+    if (!GA_ENABLED) return;
+    // Initial pageview
+    pageview(window.location.pathname + window.location.search);
+    const unsub = router.subscribe("onResolved", ({ toLocation }) => {
+      pageview((toLocation.pathname ?? "") + (toLocation.searchStr ?? ""));
+    });
+    return () => unsub();
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
