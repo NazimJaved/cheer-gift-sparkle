@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { Menu, X, GraduationCap, Bell, Sun, Moon } from "lucide-react";
+import { Menu, X, GraduationCap, Bell } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/lib/use-admin";
@@ -130,6 +130,9 @@ export function SiteHeader() {
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
+        <div className="md:hidden">
+          <ThemeToggle />
+        </div>
       </div>
       {open ? (
         <div className="border-t border-border bg-background md:hidden">
