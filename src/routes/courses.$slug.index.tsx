@@ -5,6 +5,7 @@ import { SiteLayout } from "@/components/site-layout";
 import { useCourseBySlug, useSignedCourseThumb, formatPrice } from "@/lib/db-courses";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/courses/$slug/")({
   component: CourseDetail,
@@ -16,6 +17,15 @@ function CourseDetail() {
   const thumb = useSignedCourseThumb(course?.thumbnail ?? null);
   const { user } = useAuth();
   const [enrolled, setEnrolled] = useState(false);
+
+  useEffect(() => {
+    if (!course?.id) return;
+    trackEvent("course_view", {
+      course_id: course.id,
+      course_slug: course.slug,
+      course_title: course.title,
+    });
+  }, [course?.id]);
 
   useEffect(() => {
     if (!user || !course?.id) {
@@ -99,6 +109,13 @@ function CourseDetail() {
                 <Link
                   to="/courses/$slug/buy"
                   params={{ slug: course.slug }}
+                  onClick={() =>
+                    trackEvent("buy_course_click", {
+                      course_id: course.id,
+                      course_slug: course.slug,
+                      course_title: course.title,
+                    })
+                  }
                   className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-teal px-4 py-2.5 text-sm font-medium text-teal-foreground hover:bg-teal/90"
                 >
                   কোর্স কিনুন
