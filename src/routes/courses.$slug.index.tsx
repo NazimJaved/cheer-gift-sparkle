@@ -5,6 +5,8 @@ import { SiteLayout } from "@/components/site-layout";
 import { useCourseBySlug, useSignedCourseThumb, formatPrice } from "@/lib/db-courses";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/analytics";
+import { useEffect as useEffectView } from "react";
 
 export const Route = createFileRoute("/courses/$slug/")({
   component: CourseDetail,
@@ -16,6 +18,15 @@ function CourseDetail() {
   const thumb = useSignedCourseThumb(course?.thumbnail ?? null);
   const { user } = useAuth();
   const [enrolled, setEnrolled] = useState(false);
+
+  useEffectView(() => {
+    if (!course?.id) return;
+    trackEvent("course_view", {
+      course_id: course.id,
+      course_slug: course.slug,
+      course_title: course.title,
+    });
+  }, [course?.id]);
 
   useEffect(() => {
     if (!user || !course?.id) {

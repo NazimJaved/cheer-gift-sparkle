@@ -19,6 +19,7 @@ import { SiteLayout } from "@/components/site-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useCourseBySlug, formatPrice } from "@/lib/db-courses";
+import { trackEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/courses/$slug/buy")({
   component: BuyCoursePage,
@@ -110,6 +111,12 @@ function BuyCoursePage() {
       return;
     }
     setSubmitting(true);
+    trackEvent("payment_submit", {
+      course_id: course.id,
+      course_slug: course.slug,
+      method,
+      amount: price,
+    });
     const { error } = await supabase.from("payments").insert({
       user_id: user.id,
       course_id: course.id,

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { GraduationCap, Loader2 } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -108,12 +109,15 @@ function LoginForm() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    trackEvent("login_click", { method: "password" });
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
+      trackEvent("login_failed", { message: error.message });
       setError(error.message === "Invalid login credentials" ? "ইমেইল বা পাসওয়ার্ড সঠিক নয়।" : error.message);
       return;
     }
+    trackEvent("login_success");
     await router.invalidate();
     navigate({ to: "/dashboard" });
   }
@@ -160,6 +164,7 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
       return setError("সঠিক বাংলাদেশি মোবাইল নম্বর দিন।");
     }
     setLoading(true);
+    trackEvent("register_click");
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -169,7 +174,11 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
       },
     });
     setLoading(false);
-    if (error) return setError(error.message);
+    if (error) {
+      trackEvent("register_failed", { message: error.message });
+      return setError(error.message);
+    }
+    trackEvent("register_success");
     setSuccess("রেজিস্ট্রেশন সফল! আপনার ইমেইলে যাচাইকরণ লিঙ্ক পাঠানো হয়েছে।");
     setTimeout(onDone, 2500);
   }
