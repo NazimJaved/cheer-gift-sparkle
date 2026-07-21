@@ -109,6 +109,13 @@ function CourseDetail() {
                 <Link
                   to="/courses/$slug/buy"
                   params={{ slug: course.slug }}
+                  onClick={() =>
+                    trackEvent("buy_course_click", {
+                      course_id: course.id,
+                      course_slug: course.slug,
+                      course_title: course.title,
+                    })
+                  }
                   className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-teal px-4 py-2.5 text-sm font-medium text-teal-foreground hover:bg-teal/90"
                 >
                   কোর্স কিনুন
