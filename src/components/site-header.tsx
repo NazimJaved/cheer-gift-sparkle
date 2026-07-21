@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/lib/use-admin";
 import { useSiteContent, useSignedImage } from "@/lib/site-content";
 import { useNotifications } from "@/lib/db-notifications";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const nav = [
   { to: "/", label: "হোম" },
@@ -62,6 +63,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           {loading ? null : user ? (
             <>
               {isAdmin ? (
@@ -128,6 +130,9 @@ export function SiteHeader() {
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
+        <div className="md:hidden">
+          <ThemeToggle />
+        </div>
       </div>
       {open ? (
         <div className="border-t border-border bg-background md:hidden">

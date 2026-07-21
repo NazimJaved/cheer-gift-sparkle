@@ -15,6 +15,7 @@ import { supabase } from "../integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { NotFoundPage, ServerErrorPage } from "@/components/error-pages";
 import { GA_MEASUREMENT_ID, pageview } from "@/lib/analytics";
+import { ThemeProvider, THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const GA_ENABLED = import.meta.env.PROD;
 
@@ -75,8 +76,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           {
             children: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config','${GA_MEASUREMENT_ID}',{send_page_view:false});`,
           },
+          { children: THEME_INIT_SCRIPT },
         ]
-      : [],
+      : [{ children: THEME_INIT_SCRIPT }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -123,11 +125,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <Toaster richColors position="top-right" />
-      </AuthProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
