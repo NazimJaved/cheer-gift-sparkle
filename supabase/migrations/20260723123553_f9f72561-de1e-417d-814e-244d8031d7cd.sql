@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.on_payment_submitted_notify_admins() FROM PUBLIC, anon, authenticated;
