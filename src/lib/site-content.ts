@@ -290,8 +290,8 @@ export function useSignedImage(path: string | null | undefined): string | null {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     let cancelled = false;
+    setUrl(null);
     if (!path) {
-      setUrl(null);
       return;
     }
     if (path.startsWith("http")) {
