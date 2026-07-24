@@ -93,6 +93,12 @@ export function SiteHeader() {
                 ড্যাশবোর্ড
               </Link>
               <Link
+                to="/my-courses"
+                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+              >
+                আমার কোর্স
+              </Link>
+              <Link
                 to="/profile"
                 className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
               >
@@ -157,6 +163,13 @@ export function SiteHeader() {
                   className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
                 >
                   ড্যাশবোর্ড
+                </Link>
+                <Link
+                  to="/my-courses"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
+                >
+                  আমার কোর্স
                 </Link>
                 <button
                   onClick={() => {
