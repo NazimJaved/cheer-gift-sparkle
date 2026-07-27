@@ -167,10 +167,7 @@ function LessonPlayerPage() {
     if (next) navigate({ to: "/learn/$courseSlug/$lessonSlug", params: { courseSlug, lessonSlug: next.slug } });
   }
   function toggleFullscreen() {
-    const el = playerWrapRef.current;
-    if (!el) return;
-    if (document.fullscreenElement) document.exitFullscreen();
-    else el.requestFullscreen?.();
+    void toggleFullscreenEl(playerWrapRef.current);
   }
   function setPlaybackRate(rate: number) {
     iframeRef.current?.contentWindow?.postMessage(
