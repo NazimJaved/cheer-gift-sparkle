@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site-layout";
+import { toggleFullscreen as toggleFullscreenEl } from "@/lib/fullscreen";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { youtubeEmbedUrl, type Chapter, type Lesson } from "@/lib/lessons";
