@@ -286,7 +286,7 @@ function LessonPlayerPage() {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div>
-            <div className="relative" ref={playerWrapRef}>
+            <div className="relative [&:fullscreen]:flex [&:fullscreen]:h-screen [&:fullscreen]:w-screen [&:fullscreen]:flex-col [&:fullscreen]:bg-black" ref={playerWrapRef}>
               {/* ambient glow */}
               <div
                 aria-hidden
