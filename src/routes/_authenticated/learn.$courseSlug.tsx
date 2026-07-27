@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Loader2, Lock, ArrowLeft, PlayCircle, CheckCircle2, Sparkles, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Loader2, Lock, ArrowLeft, PlayCircle, CheckCircle2, Sparkles, Maximize2 } from "lucide-react";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { extractYouTubeId, type Chapter, type Lesson } from "@/lib/lessons";
+import { toggleFullscreen } from "@/lib/fullscreen";
 
 export const Route = createFileRoute("/_authenticated/learn/$courseSlug")({
   component: LearnCourseIndex,
@@ -24,6 +25,7 @@ function LearnCourseIndex() {
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [resumeLessonSlug, setResumeLessonSlug] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const playerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -240,7 +242,10 @@ function LearnCourseIndex() {
           <aside className="order-1 lg:order-2 lg:sticky lg:top-24 lg:self-start">
             <div className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-slate-900 via-slate-950 to-black p-2 shadow-[0_30px_80px_-20px_rgba(20,184,166,0.45)]">
               <div className="pointer-events-none absolute -inset-16 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(20,184,166,0.35),transparent_70%)]" />
-              <div className="relative aspect-video overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
+              <div
+                ref={playerRef}
+                className="relative aspect-video overflow-hidden rounded-xl bg-black ring-1 ring-white/10 [&:fullscreen]:aspect-auto [&:fullscreen]:h-screen [&:fullscreen]:w-screen [&:fullscreen]:rounded-none"
+              >
                 {activeVideoId ? (
                   <>
                     <iframe
@@ -269,13 +274,14 @@ function LearnCourseIndex() {
                   </p>
                 </div>
                 {activeLesson && (
-                  <Link
-                    to="/learn/$courseSlug/$lessonSlug"
-                    params={{ courseSlug, lessonSlug: activeLesson.slug }}
+                  <button
+                    type="button"
+                    onClick={() => toggleFullscreen(playerRef.current)}
+                    title="ফুল স্ক্রিন"
                     className="inline-flex shrink-0 items-center gap-1 rounded-md bg-teal px-3 py-1.5 text-xs font-medium text-teal-foreground hover:bg-teal/90"
                   >
-                    ফুল ভিউ <ChevronRight className="h-3 w-3" />
-                  </Link>
+                    ফুল ভিউ <Maximize2 className="h-3 w-3" />
+                  </button>
                 )}
               </div>
             </div>

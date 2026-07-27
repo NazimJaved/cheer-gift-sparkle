@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site-layout";
+import { toggleFullscreen as toggleFullscreenEl } from "@/lib/fullscreen";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { youtubeEmbedUrl, type Chapter, type Lesson } from "@/lib/lessons";
@@ -167,10 +168,7 @@ function LessonPlayerPage() {
     if (next) navigate({ to: "/learn/$courseSlug/$lessonSlug", params: { courseSlug, lessonSlug: next.slug } });
   }
   function toggleFullscreen() {
-    const el = playerWrapRef.current;
-    if (!el) return;
-    if (document.fullscreenElement) document.exitFullscreen();
-    else el.requestFullscreen?.();
+    void toggleFullscreenEl(playerWrapRef.current);
   }
   function setPlaybackRate(rate: number) {
     iframeRef.current?.contentWindow?.postMessage(
@@ -288,7 +286,7 @@ function LessonPlayerPage() {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div>
-            <div className="relative" ref={playerWrapRef}>
+            <div className="relative [&:fullscreen]:flex [&:fullscreen]:h-screen [&:fullscreen]:w-screen [&:fullscreen]:flex-col [&:fullscreen]:bg-black" ref={playerWrapRef}>
               {/* ambient glow */}
               <div
                 aria-hidden
