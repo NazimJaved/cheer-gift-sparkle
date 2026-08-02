@@ -1,22 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { BookOpen, Award, Users, PlayCircle, CheckCircle2, Sparkles } from "lucide-react";
+import { BookOpen, Award, Users, PlayCircle, CheckCircle2, Sparkles, Clock } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
 import { useSiteContent, useSignedImage } from "@/lib/site-content";
-import { usePublishedCourses, useSignedCourseThumb } from "@/lib/db-courses";
+import { usePublishedCourses, useSignedCourseThumb, formatPrice, type DbCourse } from "@/lib/db-courses";
 import { usePageBlocks } from "@/lib/page-blocks";
 import { BlockRenderer } from "@/components/editor/block-renderer";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "JB IT Academy — বাংলায় ডিজিটাল দক্ষতা শিখুন" },
+      { name: "description", content: "বাংলাদেশি শিক্ষার্থীদের জন্য বাংলা ভাষার পেশাদার অনলাইন কোর্স। যেকোনো জায়গা থেকে, নিজের গতিতে, মাতৃভাষায় শেখার সুযোগ।" },
+      { property: "og:title", content: "JB IT Academy — বাংলায় ডিজিটাল দক্ষতা শিখুন" },
+      { property: "og:description", content: "বাংলাদেশি শিক্ষার্থীদের জন্য বাংলা ভাষার পেশাদার অনলাইন কোর্স।" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
 function Index() {
   const dbCourses = usePublishedCourses();
-  const featured = dbCourses?.[0] ?? null;
   const c = useSiteContent("home");
   const heroImg = useSignedImage(c.hero_image);
-  const featuredThumb = useSignedCourseThumb(featured?.thumbnail ?? null);
   const blocks = usePageBlocks("home");
   if (blocks && blocks.length > 0) {
     return (
@@ -27,7 +35,7 @@ function Index() {
   }
   return (
     <SiteLayout>
-      {/* Hero */}
+      {/* Hero with banner */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-teal/5 via-background to-green/10" />
         <div className="mx-auto max-w-6xl px-4 py-16 md:py-24">
@@ -61,41 +69,44 @@ function Index() {
               </div>
             </div>
             <div className="relative">
-              <div className="rounded-2xl border border-border bg-card p-6 shadow-xl">
-                {(() => {
-                  const img = featuredThumb ?? heroImg;
-                  return img ? (
-                    <img src={img} alt={featured?.title ?? "featured"} className="aspect-video w-full rounded-lg object-cover" />
-                  ) : (
-                    <div className="flex aspect-video items-center justify-center rounded-lg bg-gradient-to-br from-teal/20 to-green/30">
-                      <PlayCircle className="h-16 w-16 text-teal" />
-                    </div>
-                  );
-                })()}
-                {featured ? (
-                  <>
-                    <h3 className="mt-4 text-lg font-semibold">{featured.title}</h3>
-                    {featured.short_description ? (
-                      <p className="mt-1 text-sm text-muted-foreground">{featured.short_description}</p>
-                    ) : null}
-                    <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{featured.total_lessons ?? 0} লেসন</span>
-                      {featured.duration ? <><span>•</span><span>{featured.duration}</span></> : null}
-                      {featured.language ? <><span>•</span><span>{featured.language}</span></> : null}
-                    </div>
-                    <Link to="/courses/$slug" params={{ slug: featured.slug }} className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-green px-4 py-2 text-sm font-medium text-green-foreground hover:bg-green/90">
-                      বিস্তারিত দেখুন
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="mt-4 text-lg font-semibold">শীঘ্রই আসছে</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">প্রথম কোর্স শীঘ্রই প্রকাশিত হবে।</p>
-                  </>
-                )}
-              </div>
+              {heroImg ? (
+                <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+                  <img src={heroImg} alt="JB IT Academy banner" className="aspect-video w-full object-cover" />
+                </div>
+              ) : (
+                <div className="flex aspect-video items-center justify-center rounded-2xl border border-border bg-gradient-to-br from-teal/20 to-green/30 shadow-xl">
+                  <PlayCircle className="h-16 w-16 text-teal" />
+                </div>
+              )}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Courses grid */}
+      <section className="mx-auto max-w-7xl px-4 py-16">
+        <div className="mb-10 text-center">
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">আমাদের <span className="text-teal">কোর্সসমূহ</span></h2>
+          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">আপনার আগ্রহের কোর্স বেছে নিন এবং আজই শেখা শুরু করুন।</p>
+          <div className="mx-auto mt-6 h-1.5 w-20 rounded-full bg-teal" />
+        </div>
+        {dbCourses === null ? (
+          <p className="text-center text-muted-foreground">লোড হচ্ছে...</p>
+        ) : dbCourses.length === 0 ? (
+          <p className="text-center text-muted-foreground">এখনো কোনো কোর্স প্রকাশিত হয়নি।</p>
+        ) : (
+          <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-8">
+            {dbCourses.map((course) => (
+              <div key={course.id} className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] max-w-sm">
+                <HomeCourseCard c={course} />
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="mt-12 text-center">
+          <Link to="/courses" className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-6 py-3 text-sm font-medium hover:bg-secondary">
+            সব কোর্স দেখুন <BookOpen className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 
@@ -142,5 +153,61 @@ function FeatureCard({ icon, title, desc }: { icon: React.ReactNode; title: stri
       <h3 className="mt-4 text-lg font-semibold">{title}</h3>
       <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
     </div>
+  );
+}
+
+function HomeCourseCard({ c }: { c: DbCourse }) {
+  const thumb = useSignedCourseThumb(c.thumbnail);
+  const hasDiscount =
+    c.price != null && c.discount_price != null && c.discount_price > 0 && c.discount_price < c.price;
+  return (
+    <Link
+      to="/courses/$slug"
+      params={{ slug: c.slug }}
+      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+    >
+      <div className="relative flex aspect-video items-center justify-center overflow-hidden bg-gradient-to-br from-teal/20 to-green/30">
+        {thumb ? (
+          <img src={thumb} alt={c.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+        ) : (
+          <PlayCircle className="h-14 w-14 text-teal transition group-hover:scale-110" />
+        )}
+        {c.level ? (
+          <span className="absolute left-4 top-4 rounded-full bg-teal px-4 py-1.5 text-sm font-medium text-teal-foreground shadow-lg">
+            {c.level}
+          </span>
+        ) : null}
+      </div>
+      <div className="flex flex-1 flex-col p-6">
+        <h3 className="text-xl font-bold transition-colors group-hover:text-teal">{c.title}</h3>
+        {c.short_description ? (
+          <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">{c.short_description}</p>
+        ) : null}
+        <div className="mt-6 grid grid-cols-2 gap-y-3 border-t border-border/60 pt-6 text-sm text-muted-foreground">
+          {c.duration ? (
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-teal" /> {c.duration}
+            </div>
+          ) : null}
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-teal" /> {c.total_lessons ?? 0}+ লেসন
+          </div>
+          <div className="col-span-2 flex items-center gap-2">
+            <Award className="h-4 w-4 text-green" /> কোর্স শেষে সার্টিফিকেট
+          </div>
+        </div>
+        <div className="mt-auto flex items-center justify-between pt-8">
+          <div className="flex flex-col">
+            {hasDiscount ? (
+              <span className="text-xs font-medium text-muted-foreground line-through">৳ {c.price}</span>
+            ) : null}
+            <span className="text-2xl font-bold text-teal">{formatPrice(c.price, c.discount_price)}</span>
+          </div>
+          <span className="rounded-xl bg-teal px-6 py-2.5 text-sm font-semibold text-teal-foreground shadow-md transition-all group-hover:bg-teal/90 group-hover:shadow-lg">
+            বিস্তারিত
+          </span>
+        </div>
+      </div>
+    </Link>
   );
 }
