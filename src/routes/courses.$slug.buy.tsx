@@ -307,7 +307,7 @@ function BuyCoursePage() {
                     className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal to-green px-4 py-3 text-sm font-semibold text-white shadow-md shadow-teal/20 transition hover:opacity-95 disabled:opacity-50"
                   >
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-                    পেমেন্ট জমা দিন
+                    {texts.submit_label}
                   </button>
                   <p className="text-center text-[11px] text-muted-foreground">
                     জমা দেওয়ার পর অ্যাডমিন যাচাই করে ২৪ ঘন্টার মধ্যে কোর্স আনলক করবেন।
