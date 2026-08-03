@@ -127,7 +127,7 @@ export async function savePaymentSettings(settings: PaymentSettings) {
   const { error } = await supabase
     .from("site_content")
     .upsert(
-      { key: PAYMENT_CONTENT_KEY, data: settings as unknown as Record<string, unknown> },
+      { key: PAYMENT_CONTENT_KEY, data: JSON.parse(JSON.stringify(settings)) },
       { onConflict: "key" },
     );
   if (error) throw error;
