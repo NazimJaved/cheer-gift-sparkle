@@ -20,20 +20,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useCourseBySlug, formatPrice } from "@/lib/db-courses";
 import { trackEvent } from "@/lib/analytics";
+import { METHOD_KEYS, usePaymentSettings, type MethodKey } from "@/lib/payment-settings";
 
 export const Route = createFileRoute("/courses/$slug/buy")({
   component: BuyCoursePage,
 });
-
-type MethodKey = "bkash" | "nagad" | "rocket";
-type MethodInfo = { number: string; type?: string; instructions?: string };
-type PaymentMethods = Record<MethodKey, MethodInfo>;
-
-const METHOD_LABELS: Record<MethodKey, string> = {
-  bkash: "bKash",
-  nagad: "Nagad",
-  rocket: "Rocket",
-};
 
 const METHOD_STYLES: Record<MethodKey, { bg: string; ring: string; dot: string; letter: string }> = {
   bkash: { bg: "bg-pink-50", ring: "ring-pink-500", dot: "bg-pink-500", letter: "bK" },
@@ -47,7 +38,9 @@ function BuyCoursePage() {
   const navigate = useNavigate();
   const { course } = useCourseBySlug(slug);
 
-  const [methods, setMethods] = useState<PaymentMethods | null>(null);
+  const { settings } = usePaymentSettings();
+  const texts = settings.texts;
+  const enabledMethods = METHOD_KEYS.filter((k) => settings[k].enabled);
   const [method, setMethod] = useState<MethodKey>("bkash");
   const [senderName, setSenderName] = useState("");
   const [mobile, setMobile] = useState("");
@@ -65,15 +58,10 @@ function BuyCoursePage() {
   }, [authLoading, user, navigate]);
 
   useEffect(() => {
-    supabase
-      .from("site_content")
-      .select("data")
-      .eq("key", "payment-methods")
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data?.data) setMethods(data.data as PaymentMethods);
-      });
-  }, []);
+    if (enabledMethods.length && !enabledMethods.includes(method)) {
+      setMethod(enabledMethods[0]);
+    }
+  }, [enabledMethods, method]);
 
   useEffect(() => {
     if (!user || !course) return;
@@ -101,7 +89,7 @@ function BuyCoursePage() {
     return d != null && d > 0 && d < p ? d : p;
   }, [course]);
 
-  const currentMethod = methods?.[method];
+  const currentMethod = settings[method];
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -198,14 +186,14 @@ function BuyCoursePage() {
             </span>
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{course.title}</h1>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              পেমেন্ট মাধ্যম বেছে নিয়ে টাকা পাঠান, তারপর নিচের ফর্মে ট্রানজেকশন আইডি জমা দিন।
+              {texts.page_subtitle}
             </p>
           </div>
 
           {pendingExists ? (
             <div className="mt-6 flex items-start gap-3 rounded-xl border border-amber-300/60 bg-amber-50 p-4 text-sm text-amber-900">
               <Clock className="mt-0.5 h-4 w-4 shrink-0" />
-              <div>আপনার একটি পেমেন্ট এখনও পেন্ডিং। চাইলে আরেকটি জমা দিতে পারেন।</div>
+              <div>{texts.pending_notice}</div>
             </div>
           ) : null}
 
@@ -216,13 +204,13 @@ function BuyCoursePage() {
                 <header className="flex items-center gap-3 border-b border-border/60 bg-secondary/40 px-6 py-4">
                   <StepBadge n={1} />
                   <div>
-                    <div className="text-sm font-semibold">পেমেন্ট মাধ্যম বেছে নিন</div>
-                    <div className="text-xs text-muted-foreground">bKash / Nagad / Rocket থেকে যেকোনো একটি</div>
+                    <div className="text-sm font-semibold">{texts.step1_title}</div>
+                    <div className="text-xs text-muted-foreground">{texts.step1_desc}</div>
                   </div>
                 </header>
                 <div className="p-6">
                   <div className="grid gap-3 sm:grid-cols-3">
-                    {(Object.keys(METHOD_LABELS) as MethodKey[]).map((m) => {
+                    {enabledMethods.map((m) => {
                       const s = METHOD_STYLES[m];
                       const active = method === m;
                       return (
@@ -237,10 +225,10 @@ function BuyCoursePage() {
                           }`}
                         >
                           <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${s.dot} text-sm font-bold text-white`}>
-                            {s.letter}
+                            {(settings[m].label || m).slice(0, 2)}
                           </span>
                           <span className="flex-1">
-                            <span className="block text-sm font-semibold">{METHOD_LABELS[m]}</span>
+                            <span className="block text-sm font-semibold">{settings[m].label || m}</span>
                             <span className="block text-[11px] text-muted-foreground">মোবাইল ব্যাংকিং</span>
                           </span>
                           {active ? <CheckCircle2 className="h-5 w-5 text-teal" /> : null}
@@ -253,7 +241,7 @@ function BuyCoursePage() {
                     <div className="mt-5 rounded-xl border border-dashed border-border bg-secondary/30 p-5">
                       <div className="flex flex-wrap items-end justify-between gap-4">
                         <div>
-                          <div className="text-xs uppercase tracking-wide text-muted-foreground">Send Money নম্বর</div>
+                          <div className="text-xs uppercase tracking-wide text-muted-foreground">{texts.number_label}</div>
                           <div className="mt-1 flex items-center gap-2">
                             <span className="font-mono text-2xl font-bold tracking-tight">{currentMethod.number}</span>
                             <button
@@ -272,7 +260,7 @@ function BuyCoursePage() {
                           ) : null}
                         </div>
                         <div className="text-right">
-                          <div className="text-xs uppercase tracking-wide text-muted-foreground">পরিমাণ</div>
+                          <div className="text-xs uppercase tracking-wide text-muted-foreground">{texts.amount_label}</div>
                           <div className="text-2xl font-bold text-green">৳{price}</div>
                         </div>
                       </div>
@@ -291,8 +279,8 @@ function BuyCoursePage() {
                 <header className="flex items-center gap-3 border-b border-border/60 bg-secondary/40 px-6 py-4">
                   <StepBadge n={2} />
                   <div>
-                    <div className="text-sm font-semibold">পেমেন্ট তথ্য জমা দিন</div>
-                    <div className="text-xs text-muted-foreground">টাকা পাঠানোর পর ট্রানজেকশন আইডি লিখুন</div>
+                    <div className="text-sm font-semibold">{texts.step2_title}</div>
+                    <div className="text-xs text-muted-foreground">{texts.step2_desc}</div>
                   </div>
                 </header>
                 <form onSubmit={submit} className="space-y-5 p-6">
@@ -319,7 +307,7 @@ function BuyCoursePage() {
                     className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal to-green px-4 py-3 text-sm font-semibold text-white shadow-md shadow-teal/20 transition hover:opacity-95 disabled:opacity-50"
                   >
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-                    পেমেন্ট জমা দিন
+                    {texts.submit_label}
                   </button>
                   <p className="text-center text-[11px] text-muted-foreground">
                     জমা দেওয়ার পর অ্যাডমিন যাচাই করে ২৪ ঘন্টার মধ্যে কোর্স আনলক করবেন।
@@ -350,14 +338,10 @@ function BuyCoursePage() {
 
               <div className="rounded-2xl border border-border bg-card p-6 text-sm">
                 <h3 className="flex items-center gap-2 font-semibold">
-                  <ShieldCheck className="h-4 w-4 text-teal" /> কীভাবে কাজ করে
+                  <ShieldCheck className="h-4 w-4 text-teal" /> {texts.how_title}
                 </h3>
                 <ol className="mt-4 space-y-3">
-                  {[
-                    "নির্দেশনা মেনে Send Money করুন",
-                    "ট্রানজেকশন আইডিসহ ফর্ম জমা দিন",
-                    "অ্যাডমিন অনুমোদনের পর কোর্স আনলক",
-                  ].map((t, i) => (
+                  {[texts.how_step_1, texts.how_step_2, texts.how_step_3].filter(Boolean).map((t, i) => (
                     <li key={i} className="flex gap-3">
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal/10 text-xs font-bold text-teal">
                         {i + 1}
