@@ -20,10 +20,10 @@ function CoursesPage() {
   const enrolledIds = useMyEnrolledCourseIds();
   return (
     <SiteLayout>
-      <section className="bg-slate-50/50">
+      <section className="bg-muted/30">
         <div className="mx-auto max-w-7xl px-4 py-16 md:py-20">
           <div className="mb-14 text-center">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-5xl">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-5xl">
               আমাদের <span className="text-teal">কোর্সসমূহ</span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
@@ -60,7 +60,7 @@ function CourseCard({ c, enrolled }: { c: DbCourse; enrolled?: boolean }) {
     <Link
       to="/courses/$slug"
       params={{ slug: c.slug }}
-      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-2xl"
+      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-transparent hover:shadow-2xl"
     >
       <div className="relative flex aspect-video items-center justify-center overflow-hidden bg-gradient-to-br from-teal/20 to-green/30">
         {thumb ? (
@@ -73,13 +73,13 @@ function CourseCard({ c, enrolled }: { c: DbCourse; enrolled?: boolean }) {
           <PlayCircle className="h-14 w-14 text-teal transition group-hover:scale-110" />
         )}
         {c.level ? (
-          <span className="absolute left-4 top-4 rounded-full bg-teal px-4 py-1.5 text-sm font-medium text-white shadow-lg">
+          <span className="absolute left-4 top-4 rounded-full bg-teal px-4 py-1.5 text-sm font-medium text-teal-foreground shadow-lg">
             {c.level}
           </span>
         ) : null}
       </div>
       <div className="flex flex-1 flex-col p-6">
-        <h3 className="text-xl font-bold text-slate-800 transition-colors group-hover:text-teal">
+        <h3 className="text-xl font-bold text-card-foreground transition-colors group-hover:text-teal">
           {c.title}
         </h3>
         {c.short_description ? (
@@ -87,7 +87,7 @@ function CourseCard({ c, enrolled }: { c: DbCourse; enrolled?: boolean }) {
             {c.short_description}
           </p>
         ) : null}
-        <div className="mt-6 grid grid-cols-2 gap-y-3 border-t border-slate-100 pt-6 text-sm text-slate-600">
+        <div className="mt-6 grid grid-cols-2 gap-y-3 border-t border-border pt-6 text-sm text-muted-foreground">
           {c.duration ? (
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-teal" />
@@ -111,14 +111,14 @@ function CourseCard({ c, enrolled }: { c: DbCourse; enrolled?: boolean }) {
           ) : (
             <div className="flex flex-col">
               {hasDiscount ? (
-                <span className="text-xs font-medium text-slate-400 line-through">৳ {c.price}</span>
+                <span className="text-xs font-medium text-muted-foreground line-through">৳ {c.price}</span>
               ) : null}
               <span className="text-2xl font-bold text-teal">
                 {isFree ? "ফ্রি" : `৳ ${displayPrice}`}
               </span>
             </div>
           )}
-          <span className="rounded-xl bg-teal px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all group-hover:bg-teal/90 group-hover:shadow-lg">
+          <span className="rounded-xl bg-teal px-6 py-2.5 text-sm font-semibold text-teal-foreground shadow-md transition-all group-hover:bg-teal/90 group-hover:shadow-lg">
             {enrolled ? "চালিয়ে যান" : "বিস্তারিত"}
           </span>
         </div>
