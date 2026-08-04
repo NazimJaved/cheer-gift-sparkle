@@ -188,7 +188,9 @@ function LearnCourseIndex() {
         <div className="mt-6 rounded-2xl border border-border bg-card p-5">
           <div className="flex items-center justify-between text-sm">
             <span className="font-semibold">কোর্স প্রগ্রেস</span>
-            <span className="text-muted-foreground">{done}/{total}</span>
+            <span className="text-muted-foreground">
+              <span className="font-bold text-teal">{pct}%</span> · {done}/{total} লেসন সম্পন্ন
+            </span>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
             <div className="h-full bg-teal transition-all" style={{ width: `${pct}%` }} />
@@ -225,11 +227,11 @@ function LearnCourseIndex() {
                       const isDone = completedIds.has(l.id);
                       const isActive = activeLesson?.id === l.id;
                       return (
-                        <li key={l.id}>
+                        <li key={l.id} className="flex items-center">
                           <button
                             type="button"
                             onClick={() => setActiveLessonId(l.id)}
-                            className={`flex w-full items-center gap-3 p-4 text-left transition hover:bg-secondary ${
+                            className={`flex min-w-0 flex-1 items-center gap-3 p-4 text-left transition hover:bg-secondary ${
                               isActive ? "bg-teal/5" : ""
                             }`}
                           >
@@ -251,10 +253,24 @@ function LearnCourseIndex() {
                                 )}
                               </div>
                             </div>
-                            {isDone ? (
-                              <CheckCircle2 className="h-5 w-5 text-green" />
+                            <PlayCircle className={`h-5 w-5 shrink-0 ${isActive ? "text-teal" : "text-muted-foreground"}`} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleComplete(l.id)}
+                            disabled={savingId === l.id}
+                            title={isDone ? "সম্পন্ন চিহ্ন সরান" : "সম্পন্ন হিসেবে চিহ্নিত করুন"}
+                            aria-label={isDone ? "সম্পন্ন চিহ্ন সরান" : "সম্পন্ন হিসেবে চিহ্নিত করুন"}
+                            className={`mr-3 grid h-9 w-9 shrink-0 place-items-center rounded-full border transition ${
+                              isDone
+                                ? "border-green/40 bg-green/10 text-green"
+                                : "border-border text-muted-foreground hover:border-teal/50 hover:text-teal"
+                            } disabled:opacity-50`}
+                          >
+                            {savingId === l.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                              <PlayCircle className={`h-5 w-5 ${isActive ? "text-teal" : "text-muted-foreground"}`} />
+                              <CheckCircle2 className="h-5 w-5" />
                             )}
                           </button>
                         </li>
