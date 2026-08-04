@@ -25,6 +25,7 @@ function LearnCourseIndex() {
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [resumeLessonSlug, setResumeLessonSlug] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
   const playerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -90,6 +91,32 @@ function LearnCourseIndex() {
       setLoading(false);
     })();
   }, [courseSlug, user]);
+
+  async function toggleComplete(lessonId: string) {
+    if (!user || !course) return;
+    const isDone = completedIds.has(lessonId);
+    setSavingId(lessonId);
+    const { error } = await supabase.from("lesson_progress").upsert(
+      {
+        user_id: user.id,
+        lesson_id: lessonId,
+        course_id: course.id,
+        completed: !isDone,
+        last_watched_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,lesson_id" },
+    );
+    setSavingId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    const next = new Set(completedIds);
+    if (isDone) next.delete(lessonId);
+    else next.add(lessonId);
+    setCompletedIds(next);
+    toast.success(isDone ? "সম্পন্ন চিহ্ন সরানো হয়েছে" : "লেসন সম্পন্ন হিসেবে চিহ্নিত হয়েছে");
+  }
 
   if (loading) {
     return (
