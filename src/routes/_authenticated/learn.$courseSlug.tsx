@@ -25,6 +25,7 @@ function LearnCourseIndex() {
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [resumeLessonSlug, setResumeLessonSlug] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
   const playerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -90,6 +91,32 @@ function LearnCourseIndex() {
       setLoading(false);
     })();
   }, [courseSlug, user]);
+
+  async function toggleComplete(lessonId: string) {
+    if (!user || !course) return;
+    const isDone = completedIds.has(lessonId);
+    setSavingId(lessonId);
+    const { error } = await supabase.from("lesson_progress").upsert(
+      {
+        user_id: user.id,
+        lesson_id: lessonId,
+        course_id: course.id,
+        completed: !isDone,
+        last_watched_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,lesson_id" },
+    );
+    setSavingId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    const next = new Set(completedIds);
+    if (isDone) next.delete(lessonId);
+    else next.add(lessonId);
+    setCompletedIds(next);
+    toast.success(isDone ? "সম্পন্ন চিহ্ন সরানো হয়েছে" : "লেসন সম্পন্ন হিসেবে চিহ্নিত হয়েছে");
+  }
 
   if (loading) {
     return (
@@ -161,7 +188,9 @@ function LearnCourseIndex() {
         <div className="mt-6 rounded-2xl border border-border bg-card p-5">
           <div className="flex items-center justify-between text-sm">
             <span className="font-semibold">কোর্স প্রগ্রেস</span>
-            <span className="text-muted-foreground">{done}/{total}</span>
+            <span className="text-muted-foreground">
+              <span className="font-bold text-teal">{pct}%</span> · {done}/{total} লেসন সম্পন্ন
+            </span>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
             <div className="h-full bg-teal transition-all" style={{ width: `${pct}%` }} />
@@ -198,11 +227,11 @@ function LearnCourseIndex() {
                       const isDone = completedIds.has(l.id);
                       const isActive = activeLesson?.id === l.id;
                       return (
-                        <li key={l.id}>
+                        <li key={l.id} className="flex items-center">
                           <button
                             type="button"
                             onClick={() => setActiveLessonId(l.id)}
-                            className={`flex w-full items-center gap-3 p-4 text-left transition hover:bg-secondary ${
+                            className={`flex min-w-0 flex-1 items-center gap-3 p-4 text-left transition hover:bg-secondary ${
                               isActive ? "bg-teal/5" : ""
                             }`}
                           >
@@ -224,10 +253,24 @@ function LearnCourseIndex() {
                                 )}
                               </div>
                             </div>
-                            {isDone ? (
-                              <CheckCircle2 className="h-5 w-5 text-green" />
+                            <PlayCircle className={`h-5 w-5 shrink-0 ${isActive ? "text-teal" : "text-muted-foreground"}`} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleComplete(l.id)}
+                            disabled={savingId === l.id}
+                            title={isDone ? "সম্পন্ন চিহ্ন সরান" : "সম্পন্ন হিসেবে চিহ্নিত করুন"}
+                            aria-label={isDone ? "সম্পন্ন চিহ্ন সরান" : "সম্পন্ন হিসেবে চিহ্নিত করুন"}
+                            className={`mr-3 grid h-9 w-9 shrink-0 place-items-center rounded-full border transition ${
+                              isDone
+                                ? "border-green/40 bg-green/10 text-green"
+                                : "border-border text-muted-foreground hover:border-teal/50 hover:text-teal"
+                            } disabled:opacity-50`}
+                          >
+                            {savingId === l.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                              <PlayCircle className={`h-5 w-5 ${isActive ? "text-teal" : "text-muted-foreground"}`} />
+                              <CheckCircle2 className="h-5 w-5" />
                             )}
                           </button>
                         </li>
