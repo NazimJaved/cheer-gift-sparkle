@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, PlayCircle, Award, BookOpen } from "lucide-react";
+import { Clock, PlayCircle, Award, BookOpen, CheckCircle2 } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
-import { usePublishedCourses, useSignedCourseThumb, type DbCourse } from "@/lib/db-courses";
+import { usePublishedCourses, useSignedCourseThumb, useMyEnrolledCourseIds, type DbCourse } from "@/lib/db-courses";
 
 export const Route = createFileRoute("/courses/")({
   head: () => ({
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/courses/")({
 
 function CoursesPage() {
   const courses = usePublishedCourses();
+  const enrolledIds = useMyEnrolledCourseIds();
   return (
     <SiteLayout>
       <section className="bg-slate-50/50">
@@ -38,7 +39,7 @@ function CoursesPage() {
             <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-8">
               {courses.map((c) => (
                 <div key={c.id} className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)] max-w-sm">
-                  <CourseCard c={c} />
+                  <CourseCard c={c} enrolled={enrolledIds.has(c.id)} />
                 </div>
               ))}
             </div>
@@ -49,7 +50,7 @@ function CoursesPage() {
   );
 }
 
-function CourseCard({ c }: { c: DbCourse }) {
+function CourseCard({ c, enrolled }: { c: DbCourse; enrolled?: boolean }) {
   const thumb = useSignedCourseThumb(c.thumbnail);
   const hasDiscount =
     c.price != null && c.discount_price != null && c.discount_price > 0 && c.discount_price < c.price;
@@ -103,16 +104,22 @@ function CourseCard({ c }: { c: DbCourse }) {
           </div>
         </div>
         <div className="mt-auto flex items-center justify-between pt-8">
-          <div className="flex flex-col">
-            {hasDiscount ? (
-              <span className="text-xs font-medium text-slate-400 line-through">৳ {c.price}</span>
-            ) : null}
-            <span className="text-2xl font-bold text-teal">
-              {isFree ? "ফ্রি" : `৳ ${displayPrice}`}
+          {enrolled ? (
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-green/10 px-3 py-1.5 text-sm font-semibold text-green">
+              <CheckCircle2 className="h-4 w-4" /> আপনার এনরোল করা আছে
             </span>
-          </div>
+          ) : (
+            <div className="flex flex-col">
+              {hasDiscount ? (
+                <span className="text-xs font-medium text-slate-400 line-through">৳ {c.price}</span>
+              ) : null}
+              <span className="text-2xl font-bold text-teal">
+                {isFree ? "ফ্রি" : `৳ ${displayPrice}`}
+              </span>
+            </div>
+          )}
           <span className="rounded-xl bg-teal px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all group-hover:bg-teal/90 group-hover:shadow-lg">
-            বিস্তারিত
+            {enrolled ? "চালিয়ে যান" : "বিস্তারিত"}
           </span>
         </div>
       </div>

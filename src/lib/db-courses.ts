@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSignedThumbnailUrl } from "@/lib/use-admin";
+import { useAuth } from "@/lib/auth-context";
 
 export type DbCourse = {
   id: string;
@@ -88,4 +89,29 @@ export function formatPrice(price: number | null, discount: number | null) {
     return `৳${discount} (৳${price})`;
   }
   return `৳${price}`;
+}
+
+/** Set of course ids the logged-in student is enrolled in. */
+export function useMyEnrolledCourseIds() {
+  const { user } = useAuth();
+  const [ids, setIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!user?.id) {
+      setIds(new Set());
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from("enrollments")
+      .select("course_id")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (cancelled) return;
+        setIds(new Set((data ?? []).map((r) => r.course_id as string)));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+  return ids;
 }

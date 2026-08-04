@@ -94,8 +94,19 @@ function CourseDetail() {
                 )}
               </div>
               <div className="mt-5">
-                <div className="text-2xl font-bold text-green">{formatPrice(course.price, course.discount_price)}</div>
-                <p className="mt-1 text-xs text-muted-foreground">এনরোলমেন্ট অ্যাডমিন-অনুমোদিত</p>
+                {enrolled ? (
+                  <>
+                    <div className="inline-flex items-center gap-2 rounded-lg bg-green/10 px-3 py-1.5 text-base font-semibold text-green">
+                      <CheckCircle2 className="h-4 w-4" /> আপনার এনরোল করা আছে
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">লাইফটাইম অ্যাক্সেস চালু</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold text-green">{formatPrice(course.price, course.discount_price)}</div>
+                    <p className="mt-1 text-xs text-muted-foreground">এনরোলমেন্ট অ্যাডমিন-অনুমোদিত</p>
+                  </>
+                )}
               </div>
               {enrolled ? (
                 <Link
