@@ -15,7 +15,6 @@ import {
   Maximize2,
   Gauge,
   StickyNote,
-  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site-layout";
@@ -25,9 +24,6 @@ import { useAuth } from "@/lib/auth-context";
 import { youtubeEmbedUrl, type Chapter, type Lesson } from "@/lib/lessons";
 
 const NotesPanel = lazy(() => import("@/components/learn/notes-panel").then((m) => ({ default: m.NotesPanel })));
-const ResourcesPanel = lazy(() =>
-  import("@/components/learn/resources-panel").then((m) => ({ default: m.ResourcesPanel })),
-);
 
 export const Route = createFileRoute("/_authenticated/learn/$courseSlug/$lessonSlug")({
   component: LessonPlayerPage,
@@ -46,7 +42,6 @@ function LessonPlayerPage() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [savingProgress, setSavingProgress] = useState(false);
-  const [tab, setTab] = useState<"notes" | "resources">("notes");
   const playerWrapRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const savedInitial = useRef(false);
@@ -185,7 +180,6 @@ function LessonPlayerPage() {
       if (e.key === "ArrowLeft") { e.preventDefault(); goPrev(); }
       else if (e.key === "ArrowRight") { e.preventDefault(); goNext(); }
       else if (e.key.toLowerCase() === "f") { e.preventDefault(); toggleFullscreen(); }
-      else if (e.key.toLowerCase() === "n") { e.preventDefault(); setTab("notes"); }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -378,36 +372,19 @@ function LessonPlayerPage() {
                   </button>
                 </div>
 
-                {/* Notes / Resources tabs */}
+                {/* Notes */}
                 <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
                   <div className="flex border-b border-border">
-                    <button
-                      onClick={() => setTab("notes")}
-                      className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium ${
-                        tab === "notes" ? "border-b-2 border-teal text-teal" : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
+                    <span className="inline-flex items-center gap-1.5 border-b-2 border-teal px-4 py-2.5 text-sm font-medium text-teal">
                       <StickyNote className="h-4 w-4" /> নোট
-                    </button>
-                    <button
-                      onClick={() => setTab("resources")}
-                      className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium ${
-                        tab === "resources" ? "border-b-2 border-teal text-teal" : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <FileText className="h-4 w-4" /> রিসোর্স
-                    </button>
+                    </span>
                   </div>
                   <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">লোড হচ্ছে...</div>}>
-                    {tab === "notes" ? (
-                      <NotesPanel lessonId={current.id} courseId={course.id} />
-                    ) : (
-                      <ResourcesPanel lessonId={current.id} />
-                    )}
+                    <NotesPanel lessonId={current.id} courseId={course.id} />
                   </Suspense>
                 </div>
                 <p className="mt-3 text-[11px] text-muted-foreground">
-                  কীবোর্ড: ← পূর্ববর্তী · → পরবর্তী · F ফুলস্ক্রিন · N নোট
+                  কীবোর্ড: ← পূর্ববর্তী · → পরবর্তী · F ফুলস্ক্রিন
                 </p>
               </>
             )}

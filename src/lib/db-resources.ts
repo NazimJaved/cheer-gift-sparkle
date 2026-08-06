@@ -38,6 +38,39 @@ export function useLessonResources(lessonId: string | null) {
   return { items, loading, refresh };
 }
 
+/** All resources for a set of lessons (course-level file list). */
+export function useCourseResources(lessonIds: string[]) {
+  const [items, setItems] = useState<LessonResource[]>([]);
+  const [loading, setLoading] = useState(true);
+  const key = lessonIds.join(",");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const ids = key ? key.split(",") : [];
+      if (ids.length === 0) {
+        setItems([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      const { data } = await supabase
+        .from("lesson_resources")
+        .select("*")
+        .in("lesson_id", ids)
+        .order("resource_order", { ascending: true });
+      if (cancelled) return;
+      setItems((data ?? []) as LessonResource[]);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [key]);
+
+  return { items, loading };
+}
+
 export const RESOURCE_BUCKET = "lesson-resources";
 /** Uploaded files are stored as `storage:<path>` in lesson_resources.url */
 export const STORAGE_PREFIX = "storage:";
