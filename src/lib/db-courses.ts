@@ -91,12 +91,12 @@ export function formatPrice(price: number | null, discount: number | null) {
   return `৳${price}`;
 }
 
-/** Set of course ids the logged-in student is enrolled in. */
+/** Set of course ids the logged-in student is enrolled in. Admins get an empty set. */
 export function useMyEnrolledCourseIds() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [ids, setIds] = useState<Set<string>>(new Set());
   useEffect(() => {
-    if (!user?.id) {
+    if (!user?.id || isAdmin) {
       setIds(new Set());
       return;
     }
@@ -112,6 +112,6 @@ export function useMyEnrolledCourseIds() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id]);
+  }, [user?.id, isAdmin]);
   return ids;
 }
