@@ -37,3 +37,25 @@ export function useLessonResources(lessonId: string | null) {
 
   return { items, loading, refresh };
 }
+
+export const RESOURCE_BUCKET = "lesson-resources";
+/** Uploaded files are stored as `storage:<path>` in lesson_resources.url */
+export const STORAGE_PREFIX = "storage:";
+
+export function isStoredFile(url: string): boolean {
+  return url.startsWith(STORAGE_PREFIX);
+}
+
+export function storagePath(url: string): string {
+  return url.slice(STORAGE_PREFIX.length);
+}
+
+/** Resolve a resource url to an openable href (signed URL for uploaded files). */
+export async function resolveResourceUrl(url: string): Promise<string | null> {
+  if (!isStoredFile(url)) return url;
+  const { data, error } = await supabase.storage
+    .from(RESOURCE_BUCKET)
+    .createSignedUrl(storagePath(url), 60 * 60);
+  if (error) return null;
+  return data?.signedUrl ?? null;
+}

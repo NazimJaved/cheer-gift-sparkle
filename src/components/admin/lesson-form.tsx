@@ -3,6 +3,7 @@ import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { LessonResourcesEditor } from "@/components/admin/lesson-resources-editor";
 import { slugify, type Lesson, type Chapter, extractYouTubeId } from "@/lib/lessons";
 
 type FormState = {
@@ -221,6 +222,14 @@ export function LessonForm({
           </div>
         </label>
       </div>
+
+      {lesson ? (
+        <LessonResourcesEditor lessonId={lesson.id} />
+      ) : (
+        <p className="rounded-md border border-dashed border-input p-3 text-xs text-muted-foreground">
+          লেসন সংরক্ষণ করার পর PDF/লিঙ্ক রিসোর্স যোগ করতে পারবেন।
+        </p>
+      )}
 
       <div className="flex gap-3 pt-2">
         <button
