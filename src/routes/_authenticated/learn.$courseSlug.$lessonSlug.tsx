@@ -184,7 +184,6 @@ function LessonPlayerPage() {
       if (e.key === "ArrowLeft") { e.preventDefault(); goPrev(); }
       else if (e.key === "ArrowRight") { e.preventDefault(); goNext(); }
       else if (e.key.toLowerCase() === "f") { e.preventDefault(); toggleFullscreen(); }
-      else if (e.key.toLowerCase() === "n") { e.preventDefault(); setTab("notes"); }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
