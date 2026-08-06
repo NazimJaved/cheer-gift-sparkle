@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { extractYouTubeId, type Chapter, type Lesson } from "@/lib/lessons";
 import { toggleFullscreen } from "@/lib/fullscreen";
+import { CourseFiles } from "@/components/learn/course-files";
 
 export const Route = createFileRoute("/_authenticated/learn/$courseSlug")({
   component: LearnCourseIndex,
@@ -280,6 +281,7 @@ function LearnCourseIndex() {
                 </div>
               ))}
             </div>
+            <CourseFiles lessons={lessons.map((l) => ({ id: l.id, title: l.title }))} />
           </div>
 
           <aside className="order-1 lg:order-2 lg:sticky lg:top-24 lg:self-start">
