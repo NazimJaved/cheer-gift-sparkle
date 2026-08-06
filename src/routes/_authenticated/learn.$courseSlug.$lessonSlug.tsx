@@ -15,7 +15,6 @@ import {
   Maximize2,
   Gauge,
   StickyNote,
-  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site-layout";
@@ -25,9 +24,6 @@ import { useAuth } from "@/lib/auth-context";
 import { youtubeEmbedUrl, type Chapter, type Lesson } from "@/lib/lessons";
 
 const NotesPanel = lazy(() => import("@/components/learn/notes-panel").then((m) => ({ default: m.NotesPanel })));
-const ResourcesPanel = lazy(() =>
-  import("@/components/learn/resources-panel").then((m) => ({ default: m.ResourcesPanel })),
-);
 
 export const Route = createFileRoute("/_authenticated/learn/$courseSlug/$lessonSlug")({
   component: LessonPlayerPage,
