@@ -15,7 +15,7 @@ function CourseDetail() {
   const { slug } = Route.useParams();
   const { course, lessons } = useCourseBySlug(slug);
   const thumb = useSignedCourseThumb(course?.thumbnail ?? null);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [enrolled, setEnrolled] = useState(false);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ function CourseDetail() {
   }, [course?.id]);
 
   useEffect(() => {
-    if (!user || !course?.id) {
+    if (!user || isAdmin || !course?.id) {
       setEnrolled(false);
       return;
     }
@@ -39,7 +39,7 @@ function CourseDetail() {
       .eq("course_id", course.id)
       .maybeSingle()
       .then(({ data }) => setEnrolled(!!data));
-  }, [user, course?.id]);
+  }, [user, isAdmin, course?.id]);
 
   if (course === undefined) {
     return (
