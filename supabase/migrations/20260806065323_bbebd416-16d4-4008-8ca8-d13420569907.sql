@@ -1,0 +1,4 @@
+CREATE POLICY "Admins upload lesson resources" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'lesson-resources' AND public.is_admin(auth.uid()));
+CREATE POLICY "Admins update lesson resources" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'lesson-resources' AND public.is_admin(auth.uid())) WITH CHECK (bucket_id = 'lesson-resources' AND public.is_admin(auth.uid()));
+CREATE POLICY "Admins delete lesson resources" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'lesson-resources' AND public.is_admin(auth.uid()));
+CREATE POLICY "Authenticated read lesson resources" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'lesson-resources');
