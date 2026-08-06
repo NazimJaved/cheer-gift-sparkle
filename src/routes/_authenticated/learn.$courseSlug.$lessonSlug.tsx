@@ -46,7 +46,6 @@ function LessonPlayerPage() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [savingProgress, setSavingProgress] = useState(false);
-  const [tab, setTab] = useState<"notes" | "resources">("notes");
   const playerWrapRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const savedInitial = useRef(false);
@@ -378,36 +377,19 @@ function LessonPlayerPage() {
                   </button>
                 </div>
 
-                {/* Notes / Resources tabs */}
+                {/* Notes */}
                 <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
                   <div className="flex border-b border-border">
-                    <button
-                      onClick={() => setTab("notes")}
-                      className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium ${
-                        tab === "notes" ? "border-b-2 border-teal text-teal" : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
+                    <span className="inline-flex items-center gap-1.5 border-b-2 border-teal px-4 py-2.5 text-sm font-medium text-teal">
                       <StickyNote className="h-4 w-4" /> নোট
-                    </button>
-                    <button
-                      onClick={() => setTab("resources")}
-                      className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium ${
-                        tab === "resources" ? "border-b-2 border-teal text-teal" : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <FileText className="h-4 w-4" /> রিসোর্স
-                    </button>
+                    </span>
                   </div>
                   <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">লোড হচ্ছে...</div>}>
-                    {tab === "notes" ? (
-                      <NotesPanel lessonId={current.id} courseId={course.id} />
-                    ) : (
-                      <ResourcesPanel lessonId={current.id} />
-                    )}
+                    <NotesPanel lessonId={current.id} courseId={course.id} />
                   </Suspense>
                 </div>
                 <p className="mt-3 text-[11px] text-muted-foreground">
-                  কীবোর্ড: ← পূর্ববর্তী · → পরবর্তী · F ফুলস্ক্রিন · N নোট
+                  কীবোর্ড: ← পূর্ববর্তী · → পরবর্তী · F ফুলস্ক্রিন
                 </p>
               </>
             )}
