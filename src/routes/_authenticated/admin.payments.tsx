@@ -23,7 +23,7 @@ type Row = {
   reviewed_at: string | null;
   created_at: string;
   courses: { title: string; slug: string } | null;
-  profiles: { full_name: string | null; phone: string | null } | null;
+  profiles: { full_name: string | null; phone: string | null; student_id: string | null } | null;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -47,7 +47,7 @@ function AdminPayments() {
     const { data, error } = await supabase
       .from("payments")
       .select(
-        "id, user_id, amount, payment_method, status, transaction_id, sender_name, mobile_number, payment_date, note, admin_note, reviewed_at, created_at, courses(title, slug), profiles(full_name, phone)",
+        "id, user_id, amount, payment_method, status, transaction_id, sender_name, mobile_number, payment_date, note, admin_note, reviewed_at, created_at, courses(title, slug), profiles(full_name, phone, student_id)",
       )
       .order("created_at", { ascending: false });
     if (error) {
@@ -74,6 +74,7 @@ function AdminPayments() {
         r.courses?.title,
         r.profiles?.full_name,
         r.profiles?.phone,
+        r.profiles?.student_id,
       ]
         .filter(Boolean)
         .some((s) => (s as string).toLowerCase().includes(needle));
