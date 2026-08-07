@@ -509,6 +509,7 @@ export type Database = {
           full_name: string | null
           id: string
           phone: string | null
+          student_id: string | null
           updated_at: string
         }
         Insert: {
@@ -517,6 +518,7 @@ export type Database = {
           full_name?: string | null
           id: string
           phone?: string | null
+          student_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -525,6 +527,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          student_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -588,6 +591,24 @@ export type Database = {
           draft?: Json | null
           key?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      student_id_counters: {
+        Row: {
+          last_seq: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          last_seq?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          last_seq?: number
+          updated_at?: string
+          year?: number
         }
         Relationships: []
       }
@@ -655,6 +676,7 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      next_student_id: { Args: { _year?: number }; Returns: string }
     }
     Enums: {
       app_role: "student" | "admin" | "super_admin"
