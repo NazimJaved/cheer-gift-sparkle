@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { extractYouTubeId, type Chapter, type Lesson } from "@/lib/lessons";
 import { toggleFullscreen } from "@/lib/fullscreen";
-import { CourseFiles } from "@/components/learn/course-files";
+import { LessonFiles } from "@/components/learn/lesson-files";
 
 export const Route = createFileRoute("/_authenticated/learn/$courseSlug")({
   component: LearnCourseIndex,
@@ -228,7 +228,8 @@ function LearnCourseIndex() {
                       const isDone = completedIds.has(l.id);
                       const isActive = activeLesson?.id === l.id;
                       return (
-                        <li key={l.id} className="flex items-center">
+                        <li key={l.id}>
+                          <div className="flex items-center">
                           <button
                             type="button"
                             onClick={() => setActiveLessonId(l.id)}
@@ -274,6 +275,8 @@ function LearnCourseIndex() {
                               <CheckCircle2 className="h-5 w-5" />
                             )}
                           </button>
+                          </div>
+                          {isActive && <LessonFiles lessonId={l.id} />}
                         </li>
                       );
                     })}
@@ -281,7 +284,6 @@ function LearnCourseIndex() {
                 </div>
               ))}
             </div>
-            <CourseFiles lessons={lessons.map((l) => ({ id: l.id, title: l.title }))} />
           </div>
 
           <aside className="order-1 lg:order-2 lg:sticky lg:top-24 lg:self-start">
