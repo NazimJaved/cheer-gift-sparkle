@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
 });
 
-type Profile = { full_name: string | null; phone: string | null };
+type Profile = { full_name: string | null; phone: string | null; student_id: string | null };
 type EnrolledCourse = {
   id: string;
   slug: string;
@@ -42,7 +42,7 @@ function DashboardPage() {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("full_name, phone")
+      .select("full_name, phone, student_id")
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => setProfile(data));
@@ -72,6 +72,11 @@ function DashboardPage() {
           স্বাগতম{profile?.full_name ? `, ${profile.full_name}` : ""}
         </h1>
         <p className="mt-2 text-muted-foreground">আপনার শেখার যাত্রা এখানে থেকে শুরু।</p>
+        {profile?.student_id ? (
+          <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-teal/30 bg-teal/10 px-3 py-1 text-sm font-medium text-teal">
+            স্টুডেন্ট আইডি: <span className="font-bold tracking-wide">{profile.student_id}</span>
+          </p>
+        ) : null}
 
         {loading ? (
           <div className="mt-8 flex items-center gap-2 text-muted-foreground">
