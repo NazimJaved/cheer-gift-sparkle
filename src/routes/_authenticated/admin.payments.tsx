@@ -167,6 +167,11 @@ function AdminPayments() {
                   <td className="px-3 py-3">
                     <div className="font-medium">{r.profiles?.full_name ?? r.sender_name ?? "—"}</div>
                     <div className="text-xs text-muted-foreground">{r.profiles?.phone ?? "—"}</div>
+                    {r.profiles?.student_id ? (
+                      <div className="mt-1 inline-block rounded bg-teal/10 px-1.5 py-0.5 text-[11px] font-semibold text-teal">
+                        ID: {r.profiles.student_id}
+                      </div>
+                    ) : null}
                   </td>
                   <td className="px-3 py-3">{r.courses?.title ?? "—"}</td>
                   <td className="px-3 py-3 capitalize">{r.payment_method}</td>
