@@ -21,6 +21,7 @@ function ProfilePage() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [studentId, setStudentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [password, setPassword] = useState("");
@@ -43,12 +44,13 @@ function ProfilePage() {
     (async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, phone, avatar_url")
+        .select("full_name, phone, avatar_url, student_id")
         .eq("id", user.id)
         .maybeSingle();
       setFullName(data?.full_name ?? "");
       setPhone(data?.phone ?? "");
       setAvatarUrl(data?.avatar_url ?? null);
+      setStudentId(data?.student_id ?? null);
 
       const [{ data: en }, { data: prog }, { data: ach }] = await Promise.all([
         supabase.from("enrollments").select("course_id").eq("user_id", user.id),
@@ -147,6 +149,11 @@ function ProfilePage() {
           <div className="flex-1">
             <p className="font-semibold">{fullName || user?.email}</p>
             <p className="text-sm text-muted-foreground">{user?.email}</p>
+            {studentId && (
+              <p className="mt-1 inline-flex items-center gap-2 rounded-full border border-teal/30 bg-teal/10 px-3 py-1 text-xs font-medium text-teal">
+                স্টুডেন্ট আইডি: <span className="font-bold tracking-wide">{studentId}</span>
+              </p>
+            )}
             <button
               type="button"
               onClick={() => setPickerOpen((v) => !v)}
