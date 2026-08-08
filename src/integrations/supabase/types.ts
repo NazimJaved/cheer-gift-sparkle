@@ -147,6 +147,45 @@ export type Database = {
         }
         Relationships: []
       }
+      deleted_student_archive: {
+        Row: {
+          deleted_at: string
+          deleted_by: string | null
+          email: string | null
+          enrollments: Json
+          former_user_id: string | null
+          full_name: string | null
+          id: string
+          payments: Json
+          phone: string | null
+          student_id: string | null
+        }
+        Insert: {
+          deleted_at?: string
+          deleted_by?: string | null
+          email?: string | null
+          enrollments?: Json
+          former_user_id?: string | null
+          full_name?: string | null
+          id?: string
+          payments?: Json
+          phone?: string | null
+          student_id?: string | null
+        }
+        Update: {
+          deleted_at?: string
+          deleted_by?: string | null
+          email?: string | null
+          enrollments?: Json
+          former_user_id?: string | null
+          full_name?: string | null
+          id?: string
+          payments?: Json
+          phone?: string | null
+          student_id?: string | null
+        }
+        Relationships: []
+      }
       enrollments: {
         Row: {
           course_id: string
