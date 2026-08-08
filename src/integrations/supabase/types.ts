@@ -506,8 +506,11 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          deactivated_at: string | null
+          deactivated_by: string | null
           full_name: string | null
           id: string
+          is_active: boolean
           phone: string | null
           student_id: string | null
           updated_at: string
@@ -515,8 +518,11 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          deactivated_at?: string | null
+          deactivated_by?: string | null
           full_name?: string | null
           id: string
+          is_active?: boolean
           phone?: string | null
           student_id?: string | null
           updated_at?: string
@@ -524,11 +530,38 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          deactivated_at?: string | null
+          deactivated_by?: string | null
           full_name?: string | null
           id?: string
+          is_active?: boolean
           phone?: string | null
           student_id?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      retired_student_ids: {
+        Row: {
+          full_name: string | null
+          reason: string
+          retired_at: string
+          student_id: string
+          user_id: string | null
+        }
+        Insert: {
+          full_name?: string | null
+          reason?: string
+          retired_at?: string
+          student_id: string
+          user_id?: string | null
+        }
+        Update: {
+          full_name?: string | null
+          reason?: string
+          retired_at?: string
+          student_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
