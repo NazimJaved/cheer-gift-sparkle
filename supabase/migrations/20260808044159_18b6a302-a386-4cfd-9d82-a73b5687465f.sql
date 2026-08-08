@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.reserve_student_id_on_delete() FROM PUBLIC, anon, authenticated;
