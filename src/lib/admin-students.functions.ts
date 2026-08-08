@@ -130,7 +130,7 @@ export const deleteStudent = createServerFn({ method: "POST" })
 
     const { data: profile, error: pErr } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, student_id")
+      .select("id, full_name, phone, student_id")
       .eq("id", data.userId)
       .maybeSingle();
     if (pErr) throw new Error(pErr.message);
@@ -158,6 +158,24 @@ export const deleteStudent = createServerFn({ method: "POST" })
         { onConflict: "student_id" },
       );
     }
+
+    const [{ data: paymentRows }, { data: enrollmentRows }] = await Promise.all([
+      supabaseAdmin.from("payments").select("*").eq("user_id", data.userId),
+      supabaseAdmin.from("enrollments").select("*").eq("user_id", data.userId),
+    ]);
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(data.userId);
+
+    const { error: archErr } = await supabaseAdmin.from("deleted_student_archive").insert({
+      student_id: profile.student_id,
+      former_user_id: profile.id,
+      full_name: profile.full_name,
+      phone: profile.phone,
+      email: authUser?.user?.email ?? null,
+      payments: (paymentRows ?? []) as unknown as never,
+      enrollments: (enrollmentRows ?? []) as unknown as never,
+      deleted_by: context.userId,
+    });
+    if (archErr) throw new Error(archErr.message);
 
     await supabaseAdmin.from("lesson_notes").delete().eq("user_id", data.userId);
     await supabaseAdmin.from("wishlist").delete().eq("user_id", data.userId);

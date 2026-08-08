@@ -43,6 +43,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     setRoleLoading(true);
+    // Deactivated accounts lose access immediately, even on a still-valid token.
+    supabase
+      .from("profiles")
+      .select("is_active")
+      .eq("id", uid)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data && data.is_active === false) {
+          void supabase.auth.signOut();
+        }
+      });
     supabase
       .from("user_roles")
       .select("role")

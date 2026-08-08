@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { Loader2, LayoutDashboard, BookOpen, FileText, Paintbrush, Receipt, Wallet } from "lucide-react";
+import { Loader2, LayoutDashboard, BookOpen, FileText, Paintbrush, Receipt, Wallet, Users } from "lucide-react";
 import { SiteLayout } from "@/components/site-layout";
 import { useIsAdmin } from "@/lib/use-admin";
 import { useAuth } from "@/lib/auth-context";
@@ -71,6 +71,13 @@ function AdminLayout() {
               activeProps={{ className: "bg-teal text-teal-foreground border-teal" }}
             >
               <Receipt className="h-4 w-4" /> পেমেন্ট
+            </Link>
+            <Link
+              to="/admin/students"
+              className="inline-flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm font-medium hover:bg-secondary"
+              activeProps={{ className: "bg-teal text-teal-foreground border-teal" }}
+            >
+              <Users className="h-4 w-4" /> শিক্ষার্থী
             </Link>
             <Link
               to="/admin/payment-methods"
